@@ -1,0 +1,81 @@
+\name{rsaga.solar.radiation}
+\alias{rsaga.solar.radiation}
+\title{Potential incoming solar radiation}
+\description{This function calculates the potential incoming solar radiation
+    in an area either using a lumped atmospheric transmittance model
+    or estimating it based on water and dust content.}
+\usage{
+rsaga.solar.radiation(in.dem, out.grid, out.duration, latitude, 
+    unit = c("kWh/m2", "J/m2"), solconst = 1367, 
+    method = c("lumped", "components"), transmittance = 70, 
+    pressure = 1013, water.content = 1.68, dust = 100, 
+    time.range = c(0, 24), time.step = 1, days = list(day = 21, month = 3), 
+    day.step = 5, ...)
+}
+\arguments{
+  \item{in.dem}{name of input digital elevation model (DEM) grid in
+        SAGA grid format (default extension: \code{.sgrd}) }
+  \item{out.grid}{output grid file for potential incoming solar
+        radiation sums}
+  \item{out.duration}{Optional output grid file for duration of insolation}
+  \item{latitude}{Geographical latitude in degree North (negative
+        values indicate southern hemisphere)}
+  \item{unit}{unit of the \code{out.grid} output: \code{"kWh/m2"}
+        (default) or \code{"J/m2"}}
+  \item{solconst}{solar constant, defaults to 1367 W/m2}
+  \item{method}{specifies how the atmospheric components should be
+        accounted for: either based on a lumped atmospheric
+        transmittance as specified by argument \code{transmittance}
+        (\code{"lumped"}, or numeric code \code{0}; 
+        default); or by calculating the components corresponding
+        to water and dust (\code{"components"}, code \code{1})}
+  \item{transmittance}{transmittance of the atmosphere in percent;
+        usually between 60 (humid areas) and 80 percent (deserts)}
+  \item{pressure}{atmospheric pressure in mbar}
+  \item{water.content}{water content of a vertical slice of the atmosphere
+        in cm: between 1.5 and 1.7cm, average 1.68cm (default)}
+  \item{dust}{dust factor in ppm; defaults to 100ppm}
+  \item{time.range}{numeric vector of length 2: 
+        time span (hours of the day) for numerical integration}
+  \item{time.step}{time step in hours for numerical integration}
+  \item{days}{a list with components \code{day} and \code{month}
+        specifying a single day of the year for radiation modeling}
+  \item{day.step}{if \code{days} indicates a range of days, this
+        specifies the time step (number of days) for calculating
+        the incoming solar radiation}
+  \item{\dots}{optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
+        including the \code{env} RSAGA geoprocessing environment}
+}
+% \details{}
+% \value{ }
+\references{Wilson, J.P., Gallant, J.C. (eds.), 2000:
+Terrain analysis - principles and applications. New York, 
+John Wiley & Sons.}
+\author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
+\note{SAGA uses zero-based days and months, but this R function uses the
+standard one-based days and months (e.g. day 1 is the first day of the
+month, month 1 is January) and translates to the SAGA system.
+
+In SAGA 2.0.2, solar radiation sums calculated for a range of days, say
+\code{days=c(a,b)} actually calculate radiation only for days
+\code{a,...,b-1} (in steps of \code{day.step} - I used \code{day.step=1}
+in this example).  The setting \code{a=b} however gives the same result 
+as \code{b=a+1}, and indeed \code{b=a+2} gives twice the radiation sums 
+and potential sunshine duration that \code{a=b} and \code{b=a+1} both give.
+
+The solar radiation module of SAGA 2.0.1 had a bug that made it impossible
+to pass a range of \code{days} of the year or a range of hours of the day 
+(\code{time.range}) to SAGA. These options work in SAGA 2.0.1.
+
+This function uses module 2 from SAGA library \code{ta_lighting}.}
+\seealso{\code{\link{rsaga.hillshade}}, \code{\link{rsaga.insolation}}}
+\examples{
+\dontrun{
+# potential solar radiation on Nov 7 in Southern Ontario...
+rsaga.solar.radiation("dem","solrad","soldur",latitude=43,
+    days=list(day=7,month=11),time.step=0.5)
+# ...in fact a cold, cloudy, windy day...
+}
+}
+\keyword{spatial}
+\keyword{interface}

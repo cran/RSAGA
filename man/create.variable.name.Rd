@@ -1,0 +1,22 @@
+\name{create.variable.name}
+\alias{create.variable.name}
+\title{Convert file name to variable name}
+\description{Convert a file name into a variable name}
+\usage{
+create.variable.name(filename, prefix = NULL, fsep = .Platform$file.sep)
+}
+\arguments{
+  \item{filename}{character string}
+  \item{prefix}{character string: optional prefix to be added}
+  \item{fsep}{character used to separate path components}
+}
+% \details{}
+% \value{ }
+% \references{  }
+\author{Alexander Brenning}
+% \note{ }
+% \seealso{ }
+\examples{
+create.variable.name("C:/my-path/my-file-name.Rd",prefix="res")
+}
+\keyword{utilities}
