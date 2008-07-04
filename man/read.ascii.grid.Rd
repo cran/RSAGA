@@ -15,14 +15,17 @@ matrices, their headers in lists.}
 read.ascii.grid(file, return.header = TRUE, print = 0, 
     nodata.values = c(), at.once = TRUE)
 read.ascii.grid.header(file, ...)
-read.sgrd( fname, return.header = TRUE, print = 0, 
-    nodata.values = c(), at.once = TRUE, prec = 7, ... )
+read.sgrd(fname, return.header = TRUE, print = 0, 
+    nodata.values = c(), at.once = TRUE, prec = 7, ...)
 read.Rd.grid(fname, return.header = TRUE)
 
 write.ascii.grid(data, file, header = NULL, write.header = TRUE, 
     digits, dec = ".", georef = "corner")
 write.ascii.grid.header(file, header, georef, dec = ".")
-write.Rd.grid(data, file, header = NULL, write.header = TRUE, compress = TRUE)
+write.sgrd(data, file, header = NULL, prec = 7,    
+    georef = "corner", ...)
+write.Rd.grid(data, file, header = NULL, write.header = TRUE, 
+    compress = TRUE)
 }
 \arguments{
   \item{file}{file name of an ASCII grid (extension defaults to \code{.asc}

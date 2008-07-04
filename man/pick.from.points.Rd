@@ -19,7 +19,7 @@ pick.from.points(data, src, pick,
 pick.from.shapefile(data, shapefile, X.name = "x", Y.name = "y", ...)
 pick.from.ascii.grid(data, file, path, varname, prefix, 
     method = c("nearest.neighbour", "krige"), nodata.values = c(-9999, -99999), 
-    at.once = TRUE, quiet = TRUE, X.name = "x", Y.name = "y", 
+    at.once, quiet = TRUE, X.name = "x", Y.name = "y", 
     nlines = Inf, cbind = TRUE, range, radius, ...)
 pick.from.saga.grid(data, filename, path, varname, prec = 7,
     env = rsaga.env(), ...)
@@ -76,8 +76,11 @@ pick.from.saga.grid(data, filename, path, varname, prec = 7,
         the nodata value given in the input grid's header will be used}
   \item{at.once}{logical: should the grid be read as a whole or line by line?
         \code{at.once=FALSE} is useful for processing large grids that do not
-        fit into memory
-        (only relevant if \code{method="nearest.neighbour"})}
+        fit into memory; the argument is currently by default \code{FALSE}
+        for \code{method="nearest.neighbour"}, and it currently MUST be
+        \code{TRUE} for all other methods (in these cases, \code{TRUE} is
+        the default value); piecewise processing with \code{at.once=FALSE}
+        is always faster than processing the whole grid \code{at.once}}
   \item{quiet}{logical: provide information on the progress of grid processing
         on screen? (only relevant if \code{at.once=FALSE} and
         \code{method="nearest.neighbour"})}

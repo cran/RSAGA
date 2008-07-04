@@ -9,7 +9,7 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
         path = c()
         if (check.libpath) {
             path.pckg = file.path( .libPaths(), "RSAGA" )
-            try( path.pckg <- .path.package("RSAGA") )
+            try( path.pckg <- .path.package("RSAGA"), silent = TRUE )
             path = c( path, file.path( path.pckg, "saga_vc" ) )
         }
         if (check.SAGA)
@@ -82,12 +82,19 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
                 "\nTrying to find it in the current working directory...")
             path = getwd()
         }
+        the.path = NULL
         for (pa in path) {
             if (file.exists(file.path(pa,cmd))) {
-                path = pa
+                the.path = pa
                 break
             }
         }
+        if (is.null(the.path)) {
+            warning("SAGA command line program '", cmd, 
+                    "' not found in any of the paths\n", paste(path,collapse="\n"))
+            return(NULL)
+        }
+        path = the.path
     }    
 
     if (missing(modules)) {
@@ -101,8 +108,8 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
         warning("Invalid workspace path ", workspace)
     if (!file.exists(path))
         warning("Invalid SAGA path ", path)
-    if (!file.exists(file.path(path,cmd)))
-        warning("SAGA command line program ", file.path(path,cmd), " not found.")
+    #if (!file.exists(file.path(path,cmd)))
+    #    warning("SAGA command line program ", file.path(path,cmd), " not found.")
     if (!file.exists(modules))
         warning("Invalid SAGA modules path ", modules)
     return( list(
@@ -315,21 +322,22 @@ rsaga.html.help = function(lib, module, env=rsaga.env(), ...)
 
 
 rsaga.geoprocessor = function(
-    lib, module=NULL, param = list(),
-    silent=TRUE, beep.off=TRUE,
-    show.output.on.console=TRUE, invisible=TRUE, intern=TRUE,
-    env=rsaga.env(), display.command=FALSE, reduce.intern=TRUE, ... )
+    lib, module = NULL, param = list(),
+    silent = TRUE, beep.off,
+    show.output.on.console = TRUE, invisible = TRUE, intern = TRUE,
+    env = rsaga.env(), display.command = FALSE, reduce.intern = TRUE, ... )
 {
     old.wd = getwd()
     old.saga = Sys.getenv("SAGA")
     old.saga.mlb = Sys.getenv("SAGA_MLB")
     on.exit(setwd(old.wd))
-    on.exit(Sys.setenv(SAGA=old.saga,SAGA_MLB=old.saga.mlb))
+    on.exit(Sys.setenv(SAGA=old.saga,SAGA_MLB=old.saga.mlb), add=TRUE)
     
     setwd(env$workspace)
     Sys.setenv(SAGA=env$path, SAGA_MLB=env$modules)
     
-    command = paste(env$path,.Platform$file.sep,env$cmd, " ", lib, sep="")
+    command = paste('"', env$path, .Platform$file.sep, env$cmd, '"',
+                    " ", lib, sep="")
     if (!is.null(module)) {
         if (is.character(module)) module = paste('"',module,'"',sep="")
         command = paste(command, module)
@@ -353,33 +361,35 @@ rsaga.geoprocessor = function(
         }
     }
     if (display.command) cat(command,"\n")
-    if (beep.off & .Platform$OS.type=="windows") {
-        command = gsub("/","\\",command,fixed=TRUE)
-        batch = c("net stop beep",command)
-        batchfilename = paste(tempfile(),".bat",sep="")
-        batchfile = file(batchfilename,"wt")
-        writeLines(batch,con=batchfile)
-        close(batchfile)
-        command = batchfilename
-    }
+    if (!missing(beep.off))
+        warning("rsaga.geoprocessor currently ignores 'beep.off'")
+#    if (beep.off & .Platform$OS.type=="windows") {
+#        command = gsub("/","\\",command,fixed=TRUE)
+#        batch = c("net stop beep",command)
+#        batchfilename = paste(tempfile(),".bat",sep="")
+#        batchfile = file(batchfilename,"wt")
+#        writeLines(batch,con=batchfile)
+#        close(batchfile)
+#        command = batchfilename
+#    }
     res = system( command, intern=intern,
         show.output.on.console=show.output.on.console, 
         invisible=invisible, ...)
-    if (beep.off & .Platform$OS.type=="windows") unlink(batchfilename)
+#    if (beep.off & .Platform$OS.type=="windows") unlink(batchfilename)
     if (intern) {
         if (reduce.intern) {
-            if (beep.off & .Platform$OS.type=="windows") {
-                removeline = function(x) {
-                    if (x=="") return(TRUE)
-                    rmv = c(tolower(batch),"the beep service","more help is available")
-                    for (txt in rmv)
-                        if (length(grep(txt,tolower(x),fixed=TRUE)) > 0)
-                            return(TRUE)
-                    return(FALSE)
-                }
-                while ( removeline(res[1]) )
-                    res = res[-1]
-            }
+#            if (beep.off & .Platform$OS.type=="windows") {
+#                removeline = function(x) {
+#                    if (x=="") return(TRUE)
+#                    rmv = c(tolower(batch),"the beep service","more help is available")
+#                    for (txt in rmv)
+#                        if (length(grep(txt,tolower(x),fixed=TRUE)) > 0)
+#                            return(TRUE)
+#                    return(FALSE)
+#                }
+#                while ( removeline(res[1]) )
+#                    res = res[-1]
+#            }
             remove = grep("\r",res,fixed=TRUE)
             if (length(remove) > 0)
                 res = res[ -remove ]

@@ -1,9 +1,11 @@
 \name{rsaga.close.gaps}
 \alias{rsaga.close.gaps}
-\title{SAGA Module Close Gaps}
+\alias{rsaga.close.one.cell.gaps}
+\title{SAGA Modules Close Gaps and Close One Cell Gaps}
 \description{Close (Interpolate) Gaps}
 \usage{
 rsaga.close.gaps(in.dem, out.dem, threshold = 0.1, ...)
+rsaga.close.one.cell.gaps(in.dem, out.dem, ...)
 }
 \arguments{
   \item{in.dem}{input: digital elevation model (DEM) as SAGA grid file
@@ -14,15 +16,20 @@ rsaga.close.gaps(in.dem, out.dem, threshold = 0.1, ...)
   \item{\dots}{optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
         including the \code{env} RSAGA geoprocessing environment}
 }
-\details{Larger tension thresholds can be used to reduce overshoots and
-undershoots in the surfaces used to fill (interpolate) the gaps.}
+\details{\code{rsaga.close.one.cell.gaps} only fill gaps whose neighbor
+grid cells have non-missing data.
+
+In \code{rsaga.close.gaps}, larger tension thresholds can be used to reduce 
+overshoots and undershoots in the surfaces used to fill (interpolate) the 
+gaps.}
 \value{The type of object returned depends on the \code{intern} argument
 passed to the \code{\link{rsaga.geoprocessor}}. For \code{intern=FALSE}
 it is a numerical error code (0: success), or otherwise (default)
 a character vector with the module's console output.}
 %\references{  }
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
-\note{This function uses module 7 from the SAGA library \code{grid_tools}.}
+\note{This function uses modules 7 (\code{rsaga.close.gaps} and 6
+\code{rsaga.close.one.cell.gaps} from the SAGA library \code{grid_tools}.}
 \seealso{\code{\link{rsaga.geoprocessor}}, \code{\link{rsaga.env}}}
 \examples{
 \dontrun{

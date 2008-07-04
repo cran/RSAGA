@@ -106,7 +106,8 @@ names to be used for naming the output grids. The call \code{\link{resid.minmedm
 for example, returns \code{c("rmin","rmed","rmax")}; this vector must
 have the same length as the numeric vector returned when moving window
 data is passed to the function. This feature is only used if no
-\code{varnames} argument is provided.
+\code{varnames} argument is provided. Note that the result is currently
+being \code{\link{abbreviate}}d to a length of 6 characters.
 
 Input and output file names are built according to the following schemes:
 
@@ -126,7 +127,8 @@ terrain attributes compared to for example the SAGA modules, but the idea
 is that you can easily specify your own functions without starting to
 mess around with C code. For example try implementing a median filter
 as a SAGA module... or just use the code shown in the example!}
-\seealso{\code{\link{resid.median}}, \code{\link{resid.minmedmax}},
+\seealso{\code{\link{multi.focal.function}},
+\code{\link{resid.median}}, \code{\link{resid.minmedmax}},
 \code{\link{relative.position}}, \code{\link{resid.quantile}},
 \code{\link{resid.quartiles}}, \code{\link{relative.rank}}, 
 \code{\link{wind.shelter}}, \code{\link{create.variable.name}} }
