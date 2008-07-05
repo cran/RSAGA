@@ -81,7 +81,8 @@ terrain models. Hydrological Processes, 5: 59-79.
 }
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
 \note{This function uses module 0 from SAGA library \code{ta_hydrology}.}
-\seealso{\code{\link{rsaga.geoprocessor}}, \code{\link{rsaga.env}} }
+\seealso{\code{\link{rsaga.wetness.index}},
+\code{\link{rsaga.geoprocessor}}, \code{\link{rsaga.env}} }
 % \examples{}
 \keyword{spatial}
 \keyword{interface}

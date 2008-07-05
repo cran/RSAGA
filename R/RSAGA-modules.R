@@ -1,4 +1,14 @@
 
+rsaga.import.gdal = function( in.grid, out.grid, ... ) {
+    if (missing(out.grid)) {
+        out.grid = set.file.extension(in.grid, "")
+        out.grid = substr(out.grid, 1, nchar(out.grid) - 1)
+    }
+    param = list( GRIDS = out.grid, FILE = in.grid )
+    rsaga.geoprocessor("io_grid_gdal", 0, param=param)
+}
+
+
 rsaga.esri.to.sgrd = function( in.grids, 
     out.sgrds=set.file.extension(in.grids,".sgrd"), in.path, ... )
 {
@@ -52,11 +62,11 @@ rsaga.local.morphometry = function( in.dem,
     method = match.arg.ext(method,choices,numeric=TRUE,base=0)
     if (missing(out.aspect)) {
         out.aspect = tempfile()
-        on.exit(unlink(paste(out.aspect,".*",sep="")))
+        on.exit(unlink(paste(out.aspect,".*",sep="")), add = TRUE)
     }
     if (missing(out.slope)) {
         out.slope = tempfile()
-        on.exit(unlink(paste(out.slope,".*",sep="")))
+        on.exit(unlink(paste(out.slope,".*",sep="")), add = TRUE)
     }
     param = list(ELEVATION=in.dem, SLOPE=out.slope, ASPECT=out.aspect)
     if (!missing(out.curv))
@@ -66,24 +76,32 @@ rsaga.local.morphometry = function( in.dem,
     if (!missing(out.vcurv))
         param = c(param, VCURV=out.vcurv)
     param = c(param, METHOD=method)
-    res = rsaga.geoprocessor("ta_morphometry",0,param,...)
-    return(res)
+    rsaga.geoprocessor("ta_morphometry",0,param,...)
 }
 
-rsaga.slope = function( in.dem, out.slope, method = "poly2zevenbergen", ... )
+rsaga.slope = function( in.dem, out.slope, method = "poly2zevenbergen", ... ) {
+    stopifnot(!missing(out.slope))
     rsaga.local.morphometry( in.dem=in.dem, out.slope=out.slope, method=method, ... )
+}
 
-rsaga.aspect = function( in.dem, out.aspect, method = "poly2zevenbergen", ... )
+rsaga.aspect = function( in.dem, out.aspect, method = "poly2zevenbergen", ... ) {
+    stopifnot(!missing(out.aspect))
     rsaga.local.morphometry( in.dem=in.dem, out.aspect=out.aspect, method=method, ... )
-
-rsaga.curvature = function( in.dem, out.curv, method = "poly2zevenbergen", ... )
+}
+rsaga.curvature = function( in.dem, out.curv, method = "poly2zevenbergen", ... ) {
+    stopifnot(!missing(out.curv))
     rsaga.local.morphometry( in.dem=in.dem, out.curv=out.curv, method=method, ... )
+}
 
-rsaga.plan.curvature = function( in.dem, out.hcurv, method = "poly2zevenbergen", ... )
+rsaga.plan.curvature = function( in.dem, out.hcurv, method = "poly2zevenbergen", ... ) {
+    stopifnot(!missing(out.hcurv))
     rsaga.local.morphometry( in.dem=in.dem, out.hcurv=out.hcurv, method=method, ... )
+}
 
-rsaga.profile.curvature = function( in.dem, out.vcurv, method = "poly2zevenbergen", ... )
+rsaga.profile.curvature = function( in.dem, out.vcurv, method = "poly2zevenbergen", ... ) {
+    stopifnot(!missing(out.vcurv))
     rsaga.local.morphometry( in.dem=in.dem, out.vcurv=out.vcurv, method=method, ... )
+}
 
 
 
@@ -103,11 +121,11 @@ rsaga.fill.sinks = function(in.dem,out.dem,
     } else if (method==3) {
         if (missing(out.flowdir)) {
             out.flowdir = tempfile()
-            on.exit(unlink(paste(out.flowdir,".*",sep="")))
+            on.exit(unlink(paste(out.flowdir,".*",sep="")), add = TRUE)
         }
         if (missing(out.wshed)) {
             out.wshed = tempfile()
-            on.exit(unlink(paste(out.wshed,".*",sep="")))
+            on.exit(unlink(paste(out.wshed,".*",sep="")), add = TRUE)
         }
         param = list(ELEV=in.dem, FILLED=out.dem, FDIR=out.flowdir, WSHED=out.wshed)
     } else if (method==4) {
@@ -151,6 +169,13 @@ rsaga.close.gaps = function(in.dem,out.dem,threshold=0.1,...)
     in.dem = default.file.extension(in.dem,".sgrd")
     param = list( INPUT=in.dem, RESULT=out.dem, THRESHOLD=as.numeric(threshold) )
     rsaga.geoprocessor("grid_tools",7,param,...)
+}
+
+rsaga.close.one.cell.gaps = function(in.dem,out.dem,...)
+{
+    in.dem = default.file.extension(in.dem,".sgrd")
+    param = list( INPUT = in.dem, RESULT = out.dem )
+    rsaga.geoprocessor("grid_tools", 6, param, ...)
 }
 
 rsaga.search.modules = function(text, modules, search.libs=TRUE, search.modules=TRUE,
@@ -210,7 +235,7 @@ rsaga.solar.radiation = function(in.dem, out.grid, out.duration, latitude,
     in.dem = default.file.extension(in.dem,".sgrd")
     if (missing(out.duration)) {
         out.duration = tempfile()
-        on.exit(unlink(paste(out.duration,".*",sep="")))
+        on.exit(unlink(paste(out.duration,".*",sep="")), add = TRUE)
     }
     unit = match.arg.ext(unit,numeric=TRUE,ignore.case=TRUE,base=0)
     method = match.arg.ext(method,numeric=TRUE,ignore.case=TRUE,base=0)
@@ -395,6 +420,107 @@ rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
 }
 
 
+rsaga.wetness.index = function( in.dem, 
+    out.wetness.index, out.carea, out.cslope, 
+    out.mod.carea, t.param, ...)
+{
+    in.dem = default.file.extension(in.dem,".sgrd")
+    if (missing(out.carea)) {
+        out.carea = tempfile()
+        on.exit(unlink(paste(out.carea,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.cslope)) {
+        out.cslope = tempfile()
+        on.exit(unlink(paste(out.cslope,".*",sep="")), add=TRUE)
+    }
+    if (missing(out.mod.carea)) {
+        out.mod.carea = tempfile()
+        on.exit(unlink(paste(out.mod.carea,".*",sep="")), add=TRUE)
+    }
+    param = list(DEM=in.dem, C=out.carea, GN=out.cslope, 
+                 CS=out.mod.carea, SB=out.wetness.index)
+    if (!missing(t.param))
+        param = c(param, T=as.numeric(t.param))
+    rsaga.geoprocessor("ta_hydrology",15,param,...)
+}
+
+
+
+
+
+
+rsaga.grid.calculus = function(in.grids, out.grid, formula, ...)
+{
+    in.grids = default.file.extension(in.grids, ".sgrd")
+    in.grids = paste(in.grids, collapse = ";")
+    if (any(class(formula) == "formula"))
+        formula = rev( as.character(formula) )[1]
+    formula = gsub(" ", "", formula)
+    param = list( INPUT = in.grids, RESULT = out.grid,
+                  FORMUL = formula )
+    rsaga.geoprocessor("grid_calculus", 1, param, ...)
+}
+
+
+rsaga.linear.combination = function(in.grids, out.grid, coef, 
+    cf.digits = 16, remove.zeros = FALSE, remove.ones = TRUE, ...)
+{
+    fmt = paste("%.", cf.digits, "f", sep = "")
+    coef = sprintf(fmt, coef)
+    zero = sprintf(fmt, 0)
+    omit = rep(FALSE, length(coef))
+
+    if (length(coef) == length(in.grids)) { # no intercept provided
+        coef = c(NA, coef)
+        omit = c(TRUE, omit)
+    }
+    nvars = length(coef)
+    if (nvars != length(in.grids) + 1)
+        stop("'coef' must have length 'length(in.grids)' or 'length(in.grids)+1'")
+
+    # Simplify the formula by removing terms that are zero
+    # (after rounding to the specified number of digits):
+    if (remove.zeros)
+        omit = omit | (coef == zero)
+    # Zero intercept is always removed:
+    omit[1] = omit[1] | (coef[1] == zero)
+
+    # Remove zeros at the end of the coefficients:
+    for (i in 1:nvars) {
+        if (omit[i]) next
+        # Are there any digits at all?
+        if (length(grep(".", coef[i], fixed = TRUE)) == 0) next
+        nc = nchar(coef[i])
+        # Remove all trailing zeros:
+        while (substr(coef[i], nc, nc) == "0") {
+            coef[i] = substr(coef[i], 1, nc - 1)
+            nc = nchar(coef[i])
+        }
+        # Remove trailing decimal point:
+        if (substr(coef[i], nc, nc) == ".")
+            coef[i] = substr(coef[i], 1, nc - 1)
+    }
+
+    # Set up the formula:
+    ltrs = letters[ 1 : sum(!omit[-1]) ]
+    if (!omit[1]) ltrs = c("intercept", ltrs)
+    formula = paste(coef[ !omit ], ltrs, 
+                    collapse = "+", sep = "*")
+    formula = gsub("*intercept", "", formula, fixed = TRUE)
+    formula = gsub("+-", "-", formula, fixed = TRUE)
+    if (remove.ones) {
+        formula = gsub("-1*", "-", formula, fixed = TRUE)
+        formula = gsub("+1*", "+", formula, fixed = TRUE)
+    }
+    
+    rsaga.grid.calculus(in.grids = in.grids[!omit[-1]], out.grid = out.grid,
+        formula = formula, ...)
+}
+
+
+
+
+
 
 
 pick.from.saga.grid = function( data, filename, path, varname, 
@@ -404,8 +530,8 @@ pick.from.saga.grid = function( data, filename, path, varname,
     temp.asc = paste(tempfile(),".asc",sep="")
     if (missing(varname)) varname = create.variable.name(filename)
     rsaga.sgrd.to.esri(filename,temp.asc,format="ascii",prec=prec,env=env)
+    on.exit(unlink(temp.asc), add = TRUE)
     data = pick.from.ascii.grid(data,temp.asc,varname=varname,...)
-    unlink(temp.asc)
     invisible(data)
 }
 
@@ -415,22 +541,24 @@ read.sgrd = function( fname, return.header = TRUE, print = 0,
     temp.fname = paste(tempfile(),".asc",sep="")
     res = rsaga.sgrd.to.esri( fname, temp.fname, prec=prec, format="ascii",
         show.output.on.console=FALSE, intern=FALSE, ... )
+    on.exit(unlink(temp.fname), add = TRUE)
     if (res==0) {
         data = read.ascii.grid( temp.fname, return.header=return.header,
             print=print, nodata.values=nodata.values, at.once=at.once )
-        unlink(temp.fname)
     } else
         stop("error converting the SAGA sgrd file to a temporary ASCII grid file")
-    unlink(temp.fname)
     invisible(data)
 }
 
-write.sgrd = function( data, file, header = NULL, prec = 7, ... )
+write.sgrd = function( data, file, header = NULL, prec = 7,    
+    georef = "corner", ... )
+    # 'georef' argument was missing - bug fixed 2008-05-02
 {
     temp.fname = paste(tempfile(),".asc",sep="")
-    write.ascii.grid( data=data, file=temp.fname, header=header, digits=prec )
-    res = rsaga.esri.to.sgrd( in.grids=temp.fname, out.sgrds=file,
-        show.output.on.console=FALSE, intern=FALSE, ... )
-    unlink(temp.fname)
+    write.ascii.grid( data = data, file = temp.fname, header = header, 
+                digits = prec, georef = georef )
+    on.exit(unlink(temp.fname), add = TRUE)
+    res = rsaga.esri.to.sgrd( in.grids = temp.fname, out.sgrds = file,
+        show.output.on.console = FALSE, intern = FALSE, ... )
     invisible(res)
 }

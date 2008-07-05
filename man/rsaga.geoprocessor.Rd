@@ -6,7 +6,7 @@
     arguments.}
 \usage{
 rsaga.geoprocessor(lib, module = NULL, param = list(), silent = TRUE, 
-        beep.off = TRUE, show.output.on.console = TRUE, invisible = TRUE, 
+        beep.off, show.output.on.console = TRUE, invisible = TRUE, 
         intern = TRUE, env = rsaga.env(), display.command = FALSE, 
         reduce.intern=TRUE, ...)
 }
@@ -18,8 +18,9 @@ rsaga.geoprocessor(lib, module = NULL, param = list(), silent = TRUE,
         (see Examples).}
   \item{silent}{SAGA command line option \code{-silent}: avoid asking
         for interactive user input; does NOT turn off SAGA's beep.}
-  \item{beep.off}{if \code{TRUE}, try to turn off SAGA's beep using the
-        command \code{net stop beep} under Windows; doesn't always work...}
+  \item{beep.off}{is currently ignored (did never really work and produced
+        some unwanted side effects); a warning is produced if \code{beep.off}
+        is specified.}
   \item{show.output.on.console}{a logical (default: \code{TRUE}),
         indicates whether to capture 
         the output of the command and show it on the R console
