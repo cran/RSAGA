@@ -13,7 +13,7 @@ writing grids from/to ASCII grids and Rd files. Grids are stored in
 matrices, their headers in lists.}
 \usage{
 read.ascii.grid(file, return.header = TRUE, print = 0, 
-    nodata.values = c(), at.once = TRUE)
+    nodata.values = c(), at.once = TRUE, na.strings = "NA")
 read.ascii.grid.header(file, ...)
 read.sgrd(fname, return.header = TRUE, print = 0, 
     nodata.values = c(), at.once = TRUE, prec = 7, ...)
@@ -37,7 +37,7 @@ write.Rd.grid(data, file, header = NULL, write.header = TRUE,
         or just the grid data matrix? In the former case, \code{read.ascii.grid}
         returns a list with two components named \code{data} and \code{header}.}
   \item{print}{numeric, specifying how detailed the output reporting the
-        progress should be (currently 0 to 2, 0 being minimum output.}
+        progress should be (currently 0 to 2, 0 being minimum output).}
   \item{nodata.values}{optional numeric vector specifying nodata values to
         be used in addition to the nodata value specified in the grid
         header; nodata values are converted to \code{NA}.}
@@ -61,6 +61,7 @@ write.Rd.grid(data, file, header = NULL, write.header = TRUE,
         by \code{write.Rd.file} be compressed? (default: \code{TRUE})}
   \item{prec}{integer: number of digits of temporary ASCII grid used for
         importing or exporting a SAGA grid}
+  \item{na.strings}{passed on to \code{\link{scan}}.}
   \item{...}{\code{read.sgrd}, \code{write.sgrd}: additional arguments to be
         passed to \code{rsaga.geoprocessor} }
 }

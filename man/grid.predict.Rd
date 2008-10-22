@@ -6,7 +6,8 @@ of hopefully any fitted predictive model pixel by pixel to a stack of grids
 representing the explanatory variables. It is intended to be called
 primarily by \code{\link{multi.focal.function}}.}
 \usage{
-grid.predict(fit, predfun, trafo, control.predict, ...)}
+grid.predict(fit, predfun, trafo, control.predict,
+    predict.column, trace = 0, location, ...)}
 \arguments{
   \item{fit}{a model object for which prediction is desired}
   \item{predfun}{optional prediction function; if missing, the
@@ -23,6 +24,14 @@ grid.predict(fit, predfun, trafo, control.predict, ...)}
   \item{control.predict}{an optional list of arguments to be passed on
         to \code{predfun}; this may be e.g. \code{type="response"} to
         obtain probability prediction maps from a logistic regression model}
+  \item{predict.column}{optional character string: Some predict methods (e.g.
+        \code{predict.lda}) return a data.frame with several columns,
+        e.g. one column per class in a classification problem.
+        \code{predict.column} is used to pick the one that is of interest}
+  \item{trace}{integer >=0: positive values give more (=2) or less (=1)
+        information on predictor variables and predictions}
+  \item{location}{optional location data received from \code{multi.focal.function};
+        is added to the \code{newdata} object that is passed on to \code{predfun}.}
   \item{\dots}{these arguments are provided by the calling function, usually
         \code{\link{multi.focal.function}}. They contain the explanatory 
         (predictor) variables required by the \code{fit} model.}
@@ -45,7 +54,7 @@ method.}
 The example of landslide susceptibility analysis with generalized additive models. 
 In: J. Boehner, T. Blaschke, L. Montanarella (eds.), SAGA - Seconds Out 
 (= Hamburger Beitraege zur Physischen Geographie und Landschaftsoekologie, 19),
-in press. \url{http://www.fes.uwaterloo.ca/u/brenning/Brenning-2008-RSAGA.pdf}}
+23-32. \url{http://www.environment.uwaterloo.ca/u/brenning/Brenning-2008-RSAGA.pdf}}
 \author{Alexander Brenning}
 \note{Though \code{grid.predict} can in principle deal with \code{predict}
 methods returning factor variables, its usual caller

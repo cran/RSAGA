@@ -63,7 +63,8 @@ read.ascii.grid.header = function(file,...)
         file = file(file,open="r")
         on.exit(close(file), add = TRUE)
     }
-    hdr = scan(file, what=list(attribute="",value=numeric(0)), nlines=6, quiet=TRUE, ...)
+    hdr = scan(file, what=list(attribute="",value=numeric(0)), 
+            nlines=6, quiet=TRUE, ...)
     hdr$attribute = tolower(hdr$attribute)
     res = hdr$value
     names(res) = hdr$attribute
@@ -111,7 +112,7 @@ write.ascii.grid.header = function(file, header, georef, dec=".")
 
 
 read.ascii.grid = function( file, return.header = TRUE, print = 0,
-    nodata.values = c(), at.once = TRUE )
+    nodata.values = c(), at.once = TRUE, na.strings = "NA" )
 {
     if (is.character(file)) {
         file = default.file.extension(file,".asc")
@@ -124,9 +125,9 @@ read.ascii.grid = function( file, return.header = TRUE, print = 0,
     }
     hdr = read.ascii.grid.header(con)
     if (at.once) {
-        data = scan(con, nlines=hdr$nrows, quiet=TRUE)
+        data = scan(con, nlines=hdr$nrows, quiet=TRUE, na.strings = na.strings)
         data = matrix(data, ncol=hdr$ncols, nrow=hdr$nrows, byrow=TRUE)
-        na = data == hdr$nodata_value
+        na = is.na(data) | (data == hdr$nodata_value)
         for (na.val in nodata.values)  na = na | (data==na.val)
         if (any(na)) data[na] = NA
     } else {
@@ -134,8 +135,8 @@ read.ascii.grid = function( file, return.header = TRUE, print = 0,
         for (i in 1:hdr$nrows) {
             if (print == 2) cat(i, " ", ifelse(round(i/20)==i/20,"\n","") )
             if (print == 1) if (round(i/100)==i/100) cat(i, " ", ifelse(round(i/1000)==i/1000,"\n",""))
-            x = scan(con,nlines=1,quiet=TRUE)
-            na = x == hdr$nodata_value
+            x = scan(con, nlines = 1, quiet = TRUE, na.strings = na.strings)
+            na = is.na(x) | (x == hdr$nodata_value)
             for (na.val in nodata.values)  na = na | (x==na.val)
             if (any(na)) x[na] = NA
             data[i,] = x
@@ -308,7 +309,7 @@ pick.from.ascii.grid = function( data, file,
     method = c("nearest.neighbour","krige"),
     nodata.values = c(-9999,-99999), at.once, quiet = TRUE,
     X.name = "x", Y.name = "y", nlines = Inf,
-    cbind = TRUE, range, radius, ... )
+    cbind = TRUE, range, radius, na.strings = "NA", ... )
 {
     stopifnot(is.data.frame(data))
     stopifnot( X.name %in% colnames(data) )
@@ -362,14 +363,15 @@ pick.from.ascii.grid = function( data, file,
         if (!at.once)
             warning("row-by-row processing of grids is not yet implemented for kriging interpolation\n",
                 "trying to process the whole grid at once...")
-        src = read.ascii.grid(con,nodata.values=nodata.values)
+        src = read.ascii.grid(con, nodata.values = nodata.values, 
+                na.strings = na.strings)
         src = grid.to.xyz(src, colnames=c(X.name,Y.name,varname))
         if (missing(radius)) radius = 2.5 * hdr$cellsize
         if (missing(range)) range = radius
         if (range > radius) radius = range
-        data = pick.from.points(data, src, pick=varname,
-            X.name=X.name, Y.name=Y.name,
-            method="krige", range=range, radius=radius,...)
+        data = pick.from.points(data, src, pick = varname,
+            X.name=X.name, Y.name = Y.name,
+            method="krige", range = range, radius = radius,...)
 
     } else if (method=="nearest.neighbour")
     {
@@ -391,7 +393,7 @@ pick.from.ascii.grid = function( data, file,
                         cat(i," ")
                         if ( (i/100) == floor(i/100) )  cat("\n")
                     }
-                    v = scan(con,nlines=1,quiet=TRUE)
+                    v = scan(con, nlines = 1, quiet = TRUE, na.strings = na.strings)
                     if (length(v) < hdr$ncols) {
                         warning("grid row too short - corrupt grid file? filling with NA's...")
                         v = c(v, rep(nodata.values[1], hdr$ncols-length(v)))
@@ -411,7 +413,7 @@ pick.from.ascii.grid = function( data, file,
                 }
             } else # if (at.once)
             {
-                v = read.table(con)
+                v = read.table(con, na.strings = na.strings)
                 for (na in nodata.values) v[ v==na ] = NA
                 for (j in 1:nr) {
                     if ( all(select[j,]>=1) & all(select[j,]<=c(ncol(v),nrow(v))) )
@@ -540,6 +542,7 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
     path=NULL, in.path=path, out.path=path,
     fun, varnames,
     radius=0, is.pixel.radius=TRUE,
+    na.strings = "NA",
     valid.range=c(-Inf,Inf), nodata.values=c(), out.nodata.value, 
     search.mode=c("circle","square"),
     digits=4, dec=".", quiet=TRUE, nlines=Inf,
@@ -627,7 +630,8 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
             if (!quiet) if ((i %% 100)==0) cat("\n")
             
             # Read one line at a time:
-            v0 = scan(in.file,nlines=1,quiet=TRUE,dec=dec)
+            v0 = scan(in.file, nlines = 1, quiet = TRUE, dec = dec, 
+                    na.strings = na.strings)
             if (length(v0) != in.hdr$ncols) {
                 warning("grid line does not have NCOLS values")
                 v0 = c( v0, rep(NA,in.hdr$ncols-length(v0)) )
@@ -673,9 +677,15 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
         
         # the look-ahead step:
         for (i in (radius+1):(2*radius)) {
-            v[i+1,] = c( rep(NA,radius), scan(in.file,nlines=1,quiet=TRUE,dec=dec), rep(NA,radius) )
+            v[i+1,] = c( rep(NA,radius), 
+                scan(in.file, nlines = 1, quiet = TRUE, dec = dec,
+                    na.strings = na.strings), 
+                rep(NA,radius) )
             if (!is.null(in.factor.grid))
-                fac[i+1,] = c( rep(NA,radius), scan(in.factor.file,nlines=1,quiet=TRUE,dec=dec), rep(NA,radius) )
+                fac[i+1,] = c( rep(NA,radius), 
+                    scan(in.factor.file, nlines = 1, quiet = TRUE,
+                        dec = dec, na.strings = na.strings), 
+                    rep(NA,radius) )
         }
         # Process nodata values:
         for (na in nodata.values)  v[ v==na ] = NA
@@ -694,7 +704,8 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
             
             if (i <= nlines - radius) {
                 # Read a line from the grid file:
-                v0 = scan(in.file,nlines=1,quiet=TRUE,dec=dec)
+                v0 = scan(in.file, nlines = 1, quiet = TRUE, dec = dec,
+                        na.strings = na.strings)
                 if (length(v0) != in.hdr$ncols) { # check if corrupt
                     warning("grid line does not have NCOLS values")
                     v0 = c( v0, rep(NA,ncol(v)-length(v0)) )
@@ -706,7 +717,8 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
 
                 # Read a line from the factor grid:
                 if (!is.null(in.factor.grid)) {
-                    fac0 = scan(in.factor.file,nlines=1,quiet=TRUE)
+                    fac0 = scan(in.factor.file, nlines = 1, quiet = TRUE,
+                        na.strings = na.strings)
                     if (length(fac0) != in.factor.hdr$ncols) {
                         warning("factor grid line does not have NCOLS values")
                         fac0 = c( fac0, rep(NA,ncol(fac)-length(fac0)) )
@@ -795,6 +807,7 @@ multi.focal.function = function(
     path = NULL, in.path = path, out.path = path,
     fun, in.varnames, out.varnames,
     radius = 0, is.pixel.radius = TRUE,
+    na.strings = "NA",
     valid.ranges, nodata.values = c(), out.nodata.value, 
     search.mode = c("circle","square"),
     digits = 4, dec = ".", quiet = TRUE, nlines = Inf,
@@ -919,7 +932,8 @@ multi.focal.function = function(
             # Read one line at a time, file by file:
             vl0 = as.list(1:N.in)
             for (k in 1:N.in) {
-                vl0[[k]] = scan(in.files[[k]], nlines = 1, quiet = TRUE, dec = dec)
+                vl0[[k]] = scan(in.files[[k]], nlines = 1, quiet = TRUE, 
+                    dec = dec, na.strings = na.strings)
                 if (length(vl0[[k]]) != in.hdr$ncols) {
                     warning("grid line does not have NCOLS values")
                     vl0[[k]] = c( vl0[[k]], 
@@ -996,12 +1010,14 @@ multi.focal.function = function(
         for (k in 1:N.in) {
             for (i in (radius+1):(2*radius)) {
                 vl[[k]][i+1,] = c( rep(NA, radius), 
-                        scan(in.files[[k]], nlines = 1, quiet = TRUE, dec = dec), 
+                        scan(in.files[[k]], nlines = 1, quiet = TRUE, dec = dec,
+                            na.strings = na.strings), 
                         rep(NA, radius) )
                 if (k == 1) {
                     if (!is.null(in.factor.grid))
                         fac[i+1,] = c( rep(NA, radius), 
-                            scan(in.factor.file, nlines = 1, quiet = TRUE), 
+                            scan(in.factor.file, nlines = 1, quiet = TRUE,
+                                na.strings = na.strings), 
                             rep(NA, radius) )
                 }
             }
@@ -1028,7 +1044,8 @@ multi.focal.function = function(
                 # Read a line from the grid file:
                 vl0 = as.list(1:N.in)
                 for (k in 1:N.in) {
-                    vl0[[k]] = scan(in.files[[k]], nlines = 1, quiet = TRUE, dec = dec)
+                    vl0[[k]] = scan(in.files[[k]], nlines = 1, quiet = TRUE, 
+                            dec = dec, na.strings = na.strings)
                     if (length(vl0[[k]]) != in.hdr$ncols) { # check if corrupt
                         warning("grid line does not have NCOLS values")
                         vl0[[k]] = c( vl0[[k]], rep(NA, in.hdr$ncols - length(vl0[[k]])) )
@@ -1041,7 +1058,8 @@ multi.focal.function = function(
 
                 # Read a line from the factor grid:
                 if (!is.null(in.factor.grid)) {
-                    fac0 = scan(in.factor.file, nlines = 1, quiet = TRUE)
+                    fac0 = scan(in.factor.file, nlines = 1, quiet = TRUE,
+                        na.strings = na.strings)
                     if (length(fac0) != in.factor.hdr$ncols) {
                         warning("factor grid line does not have NCOLS values")
                         fac0 = c( fac0, rep(NA, in.hdr$ncols - length(fac0)) )
@@ -1104,7 +1122,8 @@ multi.focal.function = function(
                     # Pass the (x,y) coordinates to the function?
                     if (pass.location) {
                         x.coord = in.hdr$xllcenter + (j-1) * in.hdr$cellsize
-                        loc = list( location = c(x = x.coord, y = y.coord) )
+                        loc = list( location = 
+                                data.frame(x = x.coord, y = y.coord) )
                     }
                     
                     # Set up list of arguments:
@@ -1138,7 +1157,8 @@ multi.focal.function = function(
 
 
 
-grid.predict = function(fit, predfun, trafo, control.predict, ...) 
+grid.predict = function(fit, predfun, trafo, control.predict,
+    predict.column, trace = 0, location, ...) 
 {
     if (missing(fit)) stop("Error in 'grid.predict':\n",
         "If called from within 'multi.focal.function' or\n",
@@ -1147,17 +1167,36 @@ grid.predict = function(fit, predfun, trafo, control.predict, ...)
         "argument of '[multi.]focal.function' to specify response\n",
         "variable and file name.\n")
 
+    if (trace >= 2 & !missing(location))
+        print(str(location))
+    
     newdata = as.data.frame( list(...) )
-    args = list(object = fit, newdata = newdata)
-    args = c(args, control.predict)
+
+    if (!missing(location)) {
+        if (is.vector(location)) # shouldn't be...??
+            location = as.data.frame(t(location))
+        newdata = cbind(newdata, location)
+    }
     
     if (!missing(trafo))
         newdata = trafo(newdata)
 
+    if (trace >= 2)
+        print(str(newdata))
+    
+    args = list(object = fit, newdata = newdata)
+    args = c(args, control.predict)
+    
     if (missing(predfun)) {
         pred = do.call( predict, args )
     } else
         pred = do.call( predfun, args )
+        
+    if (!missing(predict.column))
+        pred = pred[,predict.column]
+    
+    if (trace >= 1)
+        print(str(pred))
     
     return(pred)
 }

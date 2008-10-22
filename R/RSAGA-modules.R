@@ -1,4 +1,73 @@
 
+rsaga.target = function(
+    target = c("user.defined", "grid.system", "target.grid", "header"),
+    user.cellsize = 100, user.fit.extent = TRUE,
+    user.x.extent, user.y.extent, user.bbox,
+    system.nx, system.ny, system.xy, system.d,
+    target.grid, header)
+{
+    target = match.arg.ext(target, base = 0, numeric = TRUE)
+    
+    if (target == 3) {
+        stopifnot(missing(user.bbox))
+        target = 1
+        system.nx = header$ncols
+        system.ny = header$nrows
+        if (!any(names(header) == "xllcenter"))
+            header$xllcenter = header$xllcorner + header$cellsize / 2
+        if (!any(names(header) == "yllcenter"))
+            header$yllcenter = header$yllcorner + header$cellsize / 2
+        system.xy = c(header$xllcenter, header$yllcenter)
+        system.d = header$cellsize
+    }
+
+    param = list(TARGET = target)
+    
+    if (target == 0) {
+        stopifnot(missing(system.nx) & missing(system.ny) & missing(system.xy) &
+            missing(system.d) & missing(target.grid))
+        stopifnot(is.logical(user.fit.extent))
+        param = c(param,
+            USER_CELL_SIZE = user.cellsize,
+            USER_FIT_EXTENT = user.fit.extent)
+        if (user.fit.extent) {
+            if (!missing(user.x.extent) | !missing(user.y.extent) | !missing(user.bbox))
+                warning("'user.x.extent', 'user.y.extent' and 'user.bbox' will be ignored because 'user.fit.extent=TRUE'")
+        } else {
+            if (missing(user.bbox)) 
+                user.bbox = rbind(user.x.extent, user.y.extent, deparse.level = 0)
+            param = c(param,
+                USER_X_EXTENT_MIN = user.bbox[1,1],
+                USER_X_EXTENT_MAX = user.bbox[1,2],
+                USER_Y_EXTENT_MIN = user.bbox[2,1],
+                USER_Y_EXTENT_MAX = user.bbox[2,2])
+        }
+    } else if (target == 1) {
+        stopifnot(missing(user.x.extent) & missing(user.y.extent) & 
+            missing(user.bbox) & missing(target.grid))
+        stopifnot(length(system.xy) == 2)
+        param = c(param,
+            SYSTEM_SYSTEM_NX = system.nx,
+            SYSTEM_SYSTEM_NY = system.ny,
+            SYSTEM_SYSTEM_X  = system.xy[1],
+            SYSTEM_SYSTEM_Y  = system.xy[2],
+            SYSTEM_SYSTEM_D  = system.d)
+    } else if (target == 2) {
+        stopifnot(missing(system.nx) & missing(system.ny) & missing(system.xy) & missing(system.d) &
+            missing(user.x.extent) & missing(user.y.extent) & missing(user.bbox))
+        target.grid = default.file.extension(target.grid, ".sgrd")
+        param = c(param,
+            GRID_GRID = target.grid)
+    }
+    return(param)
+}
+
+
+############################################
+########     Module io_grid_gdal    ########
+############################################
+
+
 rsaga.import.gdal = function( in.grid, out.grid, ... ) {
     if (missing(out.grid)) {
         out.grid = set.file.extension(in.grid, "")
@@ -7,6 +76,12 @@ rsaga.import.gdal = function( in.grid, out.grid, ... ) {
     param = list( GRIDS = out.grid, FILE = in.grid )
     rsaga.geoprocessor("io_grid_gdal", 0, param=param)
 }
+
+
+
+############################################
+########       Module io_grid       ########
+############################################
 
 
 rsaga.esri.to.sgrd = function( in.grids, 
@@ -50,6 +125,13 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
             ...))
     invisible(res)
 }
+
+
+
+
+############################################
+########    Module ta_morphometry   ########
+############################################
 
 
 rsaga.local.morphometry = function( in.dem, 
@@ -103,6 +185,12 @@ rsaga.profile.curvature = function( in.dem, out.vcurv, method = "poly2zevenberge
     rsaga.local.morphometry( in.dem=in.dem, out.vcurv=out.vcurv, method=method, ... )
 }
 
+
+
+
+############################################
+########   Module ta_preprocessor   ########
+############################################
 
 
 rsaga.fill.sinks = function(in.dem,out.dem,
@@ -164,6 +252,14 @@ rsaga.sink.removal = function(in.dem,in.sinkroute,out.dem,method="fill",...)
 }
 
 
+
+
+############################################
+########     Module grid_tools      ########
+############################################
+
+
+
 rsaga.close.gaps = function(in.dem,out.dem,threshold=0.1,...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
@@ -200,17 +296,11 @@ rsaga.search.modules = function(text, modules, search.libs=TRUE, search.modules=
     return( list( lib = lib, modules = mod ) )
 }
 
-rsaga.contour = function(in.grid,out.shapefile,zstep,zmin,zmax,...) {
-    in.grid = default.file.extension(in.grid,".sgrd")
-    param = list(INPUT=in.grid,CONTOUR=out.shapefile)
-    if (!missing(zmin))  param = c(param, ZMIN=as.numeric(zmin))
-    if (!missing(zmax))  param = c(param, ZMAX=as.numeric(zmax))
-    if (!missing(zstep)) {
-        stopifnot(as.numeric(zstep)>0)
-        param = c(param, ZSTEP=as.numeric(zstep))
-    }
-    rsaga.geoprocessor("shapes_grid", 5, param, ...)
-}
+
+
+############################################
+########     Module ta_lighting     ########
+############################################
 
 
 rsaga.hillshade = function(in.dem, out.grid,
@@ -345,6 +435,12 @@ rsaga.insolation = function(in.dem, in.vapour, in.latitude, in.longitude,
 
 
 
+
+############################################
+########     Module grid_filter     ########
+############################################
+
+
 rsaga.filter.simple = function(in.grid, out.grid, mode="circle",
     method=c("smooth","sharpen","edge"), radius,...)
 {
@@ -379,6 +475,13 @@ rsaga.filter.gauss = function(in.grid, out.grid, sigma,
     param = list(INPUT=in.grid, RESULT=out.grid, SIGMA=sigma, RADIUS=radius)
     rsaga.geoprocessor("grid_filter", 1, param, ...)
 }
+
+
+
+
+############################################
+########     Module ta_hydrology    ########
+############################################
 
 
 rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
@@ -447,6 +550,10 @@ rsaga.wetness.index = function( in.dem,
 
 
 
+
+############################################
+########    Module grid_calculus    ########
+############################################
 
 
 rsaga.grid.calculus = function(in.grids, out.grid, formula, ...)
@@ -520,18 +627,213 @@ rsaga.linear.combination = function(in.grids, out.grid, coef,
 
 
 
+############################################
+########     Module shapes_grid     ########
+############################################
+
+
+rsaga.contour = function(in.grid,out.shapefile,zstep,zmin,zmax,...) {
+    in.grid = default.file.extension(in.grid,".sgrd")
+    param = list(INPUT=in.grid,CONTOUR=out.shapefile)
+    if (!missing(zmin))  param = c(param, ZMIN=as.numeric(zmin))
+    if (!missing(zmax))  param = c(param, ZMAX=as.numeric(zmax))
+    if (!missing(zstep)) {
+        stopifnot(as.numeric(zstep)>0)
+        param = c(param, ZSTEP=as.numeric(zstep))
+    }
+    rsaga.geoprocessor("shapes_grid", 5, param, ...)
+}
+
+
+rsaga.add.grid.values.to.points = function(in.shapefile,
+    in.grids, out.shapefile, 
+    method = c("nearest.neighbour", "bilinear",
+      "idw", "bicubic.spline", "b.spline"), ...)
+{
+    in.grids = default.file.extension(in.grids,".sgrd")
+    in.grids = paste(in.grids, collapse = ";")
+    method = match.arg.ext(method, base = 0, ignore = TRUE, numeric = TRUE)
+    param = list(SHAPES = in.shapefile, GRIDS = in.grids,
+                RESULT = out.shapefile, INTERPOL = method)
+    rsaga.geoprocessor("shapes_grid", 0, param, ...)
+} # "Add Grid Values to Points" in module "shapes_grid"
+
+
+rsaga.grid.to.points.randomly = function(in.grid,
+    out.shapefile, freq, ...)
+{
+    in.grid = default.file.extension(in.grid, ".sgrd")
+    out.shapefile = default.file.extension(out.shapefile, ".shp")
+    if (freq < 1) stop("'freq' must be an integer >=1")
+    param = list(GRID = in.grid, FREQ = freq, POINTS = out.shapefile)
+    rsaga.geoprocessor("shapes_grid", 4, param, ...)
+}
+
+#rsaga.grid.to.points.randomly("dem", "pts", freq = 20)
+
+
+rsaga.grid.to.points = function(in.grids, out.shapefile, 
+    in.clip.polygons, exclude.nodata = TRUE, ...)
+{
+    in.grids = default.file.extension(in.grids,".sgrd")
+    in.grids = paste(in.grids, collapse = ";")
+    param = list(GRIDS = in.grids, POINTS = out.shapefile,
+                 NODATA = exclude.nodata)
+    if (!missing(in.clip.polygons))
+        param = c(param, POLYGONS = in.clip.polygons)
+    rsaga.geoprocessor("shapes_grid", 3, param, ...)
+} # "Grid Values to Points" in module "shapes_grid"
+
+
+
+
+
+
+
+# note: using "target.grid" seems to crash SAGA, but AFTER successfully
+# completing module execution
+rsaga.inverse.distance = function(in.shapefile, out.grid, field, 
+        power = 1, maxdist = 100, nmax = 10,
+        target = rsaga.target(), ...)
+{
+    in.shapefile = default.file.extension(in.shapefile, ".shp")
+    out.grid = default.file.extension(out.grid, ".sgrd")
+    if (power <= 0)
+        stop("'power' must be >0")
+    if (maxdist <= 0)
+        stop("'maxdist' must be >0")
+    if (nmax <= 0)
+        stop("'nmax' must be >0")
+    if (field < 0)
+        stop("'field' must be an integer >=0")
+    param = list(
+        GRID = out.grid,
+        SHAPES = in.shapefile,
+        FIELD = field,
+        POWER = power,
+        RADIUS = maxdist,
+        NPOINTS = nmax)
+    param = c(param, target)
+        
+    rsaga.geoprocessor("grid_gridding", 0, param, ...)
+}
+
+
+rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
+    target = rsaga.target(), ...)
+{
+    in.shapefile = default.file.extension(in.shapefile, ".shp")
+    out.grid = default.file.extension(out.grid, ".sgrd")
+    if (field < 0)
+        stop("'field' must be an integer >=0")
+    param = list(
+        GRID = out.grid,
+        SHAPES = in.shapefile,
+        FIELD = field)
+    param = c(param, target)
+        
+    rsaga.geoprocessor("grid_gridding", 1, param, ...)
+}
+
+#rsaga.nearest.neighbour("pt", "mydem", field = 0,
+#    target = rsaga.target(target="header", header=read.ascii.grid.header("dem.asc")))
+
+
+
+rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
+    quadratic.neighbors = 13, weighting.neighbors = 19,
+    target = rsaga.target(), ...)
+{
+    in.shapefile = default.file.extension(in.shapefile, ".shp")
+    out.grid = default.file.extension(out.grid, ".sgrd")
+    if (field < 0)
+        stop("'field' must be an integer >=0")
+    if (quadratic.neighbors < 5)
+        stop("'quadratic.neighbors' must be an integer >=5")
+    if (weighting.neighbors < 5)
+        stop("'weighting.neighbors' must be an integer >=3")
+    param = list(
+        GRID = out.grid,
+        SHAPES = in.shapefile,
+        FIELD = field,
+        QUADRATIC_NEIGHBORS = quadratic.neighbors,
+        WEIGHTING_NEIGHBORS = weighting.neighbors)
+    param = c(param, target)
+        
+    rsaga.geoprocessor("grid_gridding", 2, param, ...)
+}
+
+
+rsaga.triangulation = function(in.shapefile, out.grid, field,
+    target = rsaga.target(), ...)
+{
+    in.shapefile = default.file.extension(in.shapefile, ".shp")
+    out.grid = default.file.extension(out.grid, ".sgrd")
+    if (field < 0)
+        stop("'field' must be an integer >=0")
+    param = list(
+        GRID = out.grid,
+        SHAPES = in.shapefile,
+        FIELD = field)
+    param = c(param, target)
+        
+    rsaga.geoprocessor("grid_gridding", 4, param, ...)
+}
+
+
+rsaga.ordinary.kriging = function(in.shapefile, out.grid, 
+    out.variance.grid, field, 
+    model = c("spherical", "exponential", "gaussian"),
+    nugget = 0, sill = 10, range = 100,
+    log.transform = FALSE, maxdist = 1000, blocksize, 
+    nmin = 4, nmax = 20,
+    target = rsaga.target(), ...)
+{
+    in.shapefile = default.file.extension(in.shapefile, ".shp")
+    out.grid = default.file.extension(out.grid, ".sgrd")
+    if (field < 0)
+        stop("'field' must be an integer >=0")
+    bvariance = !missing(out.variance.grid)
+    block = !missing(blocksize)
+    model = match.arg.ext(model, base = 0, numeric = TRUE)
+    
+    param = list(
+        GRID = out.grid,
+        SHAPES = in.shapefile,
+        FIELD = field)
+    
+    if (bvariance)
+        param = c(param, BVARIANCE = TRUE, VARIANCE = out.variance.grid)
+    if (block)
+        param = c(param, BLOCK = TRUE, DBLOCK = blocksize)
+        
+    param = c(param, BLOG = log.transform, MODEL = model,
+            NUGGET = nugget, SILL = sill, RANGE = range,
+            MAXRADIUS = maxdist,
+            NPOINTS_MIN = nmin, NPOINTS_MAX = nmax)
+        
+    param = c(param, target)
+        
+    rsaga.geoprocessor("geostatistics_kriging", 4, param, ...)
+}
+
+
+
+
 
 
 
 pick.from.saga.grid = function( data, filename, path, varname, 
-    prec=7, env=rsaga.env(), ... )
+    prec = 7, show.output.on.console = FALSE, env = rsaga.env(), ... )
 {
     if (!missing(path)) if (path!="") filename = file.path(path,filename)
     temp.asc = paste(tempfile(),".asc",sep="")
     if (missing(varname)) varname = create.variable.name(filename)
-    rsaga.sgrd.to.esri(filename,temp.asc,format="ascii",prec=prec,env=env)
+    rsaga.sgrd.to.esri(filename, temp.asc, format = "ascii",
+        prec = prec, show.output.on.console = show.output.on.console,
+        env = env)
     on.exit(unlink(temp.asc), add = TRUE)
-    data = pick.from.ascii.grid(data,temp.asc,varname=varname,...)
+    data = pick.from.ascii.grid(data,temp.asc, varname = varname,...)
     invisible(data)
 }
 
