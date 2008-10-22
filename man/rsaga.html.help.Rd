@@ -17,7 +17,12 @@ rsaga.html.help(lib, module, env = rsaga.env(), ...)
         as created by \code{\link{rsaga.env}}}
   \item{\dots}{additional arguments to be passed to \code{\link{browseURL}}}
 }
-\details{This help is not always available,
+\details{Doesn't seem to work with SAGA GIS 2.0.2+, needs to be updated, sorry.
+Please use \code{\link{rsaga.get.usage}} or \code{\link{rsaga.search.modules}}
+or \code{\link{rsaga.get.modules}} instead.
+
+Deprecated details on this function:
+This help is not always available,
     there are some mismatches between libraries and their HTML files,
     and the HTML files are designed for use with SAGA GUI, not with
     the command line version. Some HTML help pages are also linked to

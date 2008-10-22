@@ -20,9 +20,9 @@ pick.from.shapefile(data, shapefile, X.name = "x", Y.name = "y", ...)
 pick.from.ascii.grid(data, file, path, varname, prefix, 
     method = c("nearest.neighbour", "krige"), nodata.values = c(-9999, -99999), 
     at.once, quiet = TRUE, X.name = "x", Y.name = "y", 
-    nlines = Inf, cbind = TRUE, range, radius, ...)
+    nlines = Inf, cbind = TRUE, range, radius, na.strings = "NA", ...)
 pick.from.saga.grid(data, filename, path, varname, prec = 7,
-    env = rsaga.env(), ...)
+    show.output.on.console = FALSE, env = rsaga.env(), ...)
 }
 \arguments{
   \item{data}{data.frame giving the coordinates (in columns specified by
@@ -89,8 +89,13 @@ pick.from.saga.grid(data, filename, path, varname, prec = 7,
   \item{filename}{character: name of a SAGA grid file, default extension \code{.sgrd}}
   \item{prec}{numeric, specifying the number of digits to be used in converting
         a SAGA grid to an ASCII grid in \code{pick.from.saga.grid}}
+  \item{na.strings}{passed on to \code{\link{scan}}}
   \item{env}{list: RSAGA geoprocessing environment created by 
         \code{\link{rsaga.env}}}
+  \item{show.output.on.console}{a logical (default: \code{FALSE}),
+        indicates whether to capture 
+        the output of the command and show it on the R console
+        (see \code{\link{system}}, \code{\link{rsaga.geoprocessor}}).}
   \item{...}{arguments to be passed to \code{pick.from.points}}
 }
 % \details{ }

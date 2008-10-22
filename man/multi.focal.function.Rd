@@ -14,6 +14,7 @@ is generated for each grid cell.}
 multi.focal.function(in.grids, in.grid.prefix, in.factor.grid, 
     out.grid.prefix, path = NULL, in.path = path, out.path = path,
     fun, in.varnames, out.varnames, radius = 0, is.pixel.radius = TRUE,
+    na.strings = "NA",
     valid.ranges, nodata.values = c(), out.nodata.value, 
     search.mode = c("circle","square"),  digits = 4, 
     dec = ".", quiet = TRUE, nlines = Inf, mw.to.vector = FALSE, 
@@ -90,6 +91,7 @@ multi.focal.function(in.grids, in.grid.prefix, in.factor.grid,
         and \code{y} are passed to \code{fun}; NOTE: This currently
         only works for \code{radius=0}, otherwise a warning is produced
         and \code{pass.location} is reset to \code{FALSE}.}
+  \item{na.strings}{passed on to \code{\link{scan}}}
   \item{\dots}{Arguments to be passed to \code{fun};
         \code{local.function}: arguments to be passed to 
         \code{focal.function}.}
@@ -141,7 +143,7 @@ character vector of output file names.}
 The example of landslide susceptibility analysis with generalized additive models. 
 In: J. Boehner, T. Blaschke, L. Montanarella (eds.), SAGA - Seconds Out 
 (= Hamburger Beitraege zur Physischen Geographie und Landschaftsoekologie, 19),
-in press. \url{http://www.fes.uwaterloo.ca/u/brenning/Brenning-2008-RSAGA.pdf}}
+23-32. \url{http://www.environment.uwaterloo.ca/u/brenning/Brenning-2008-RSAGA.pdf}}
 \author{Alexander Brenning}
 \note{\code{multi.focal.function} can do all the things \code{\link{focal.function}}
 can do.}
