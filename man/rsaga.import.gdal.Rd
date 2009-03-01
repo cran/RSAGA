@@ -25,6 +25,7 @@ with file names of the form \eqn{in.grid{\_}01.sgrd}{in.grid_01.sgrd},
 one for each band.
 
 The following raster formats are currently supported:
+\itemize{
 \item{VRT}{Virtual Raster}
 \item{GTiff}{GeoTIFF}
 \item{NITF}{National Imagery Transmission Format}
@@ -62,6 +63,7 @@ The following raster formats are currently supported:
 \item{FIT}{FIT Image}
 \item{USGSDEM}{USGS Optional ASCII DEM}
 \item{GXF}{GeoSoft Grid Exchange Format}
+}
 }
 % \value{ }
 \references{GDAL website: \url{http://www.gdal.org/}}
