@@ -42,9 +42,14 @@ rsaga.esri.wrapper(fun, in.esri = TRUE, out.esri = TRUE, env = rsaga.env(),
   \item{clean.up}{logical: delete intermediate SAGA grid files?}
   \item{intern}{\code{intern} argument to be passed to \code{\link{rsaga.geoprocessor}};
         see Value}
-  \item{\dots}{additional arguments for \code{fun}}
+  \item{\dots}{additional arguments for \code{fun}; NOTE: ESRI ASCII/float
+        raster file names should NOT include the file extension (.asc, .flt);
+        the file extension is defined by the \code{esri.extension} and
+        \code{format} arguments!}
 }
-% \details{ }
+\details{ESRI ASCII/float raster file names should NOT include 
+the file extension (.asc, .flt); the file extension is defined 
+by the \code{esri.extension} and \code{format} arguments!}
 \value{The object returned depends on the \code{condensed.res} arguments
 and the \code{intern} argument passed to the \code{\link{rsaga.geoprocessor}}.
 

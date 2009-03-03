@@ -46,6 +46,7 @@ or the formula \code{~(a-b)/(a+b)} in the \code{formula} argument.
 In addition to +, -, *, and /, the following operators and 
 functions are available for the \code{formula} definition:
 
+\itemize{
     \item{\eqn{\hat{\ }}{^}}{power}
     \item{sin(a)}{sine}
     \item{cos(a)}{cosine}
@@ -63,6 +64,7 @@ functions are available for the \code{formula} definition:
     \item{lt(a, b)}{returns 1 if a lower b}
     \item{eq(a, b)}{returns 1 if a equal b}
     \item{ifelse(switch, x, y)}{returns x if switch equals 1 else y}
+}
 
 Using \code{remove.zeros=FALSE} might have the side effect that no data
 areas in the grid with coefficient 0 are passed on to the results
