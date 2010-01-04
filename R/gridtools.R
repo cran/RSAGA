@@ -2,7 +2,8 @@
 set.file.extension = function(filename, extension, fsep=.Platform$file.sep) {
     if (extension=="") extension = "."
     if (substr(extension,1,1)!=".") extension = paste(".",extension,sep="")
-    filename = gsub("\\",fsep,filename,fixed=TRUE)
+    if (.Platform$OS.type == "windows")
+        filename = gsub("\\",fsep,filename,fixed=TRUE)
     the.extension = get.file.extension(filename)
     filename = substr(filename,1,nchar(filename)-nchar(the.extension))
     return( paste( filename, extension, sep="") )
@@ -12,7 +13,8 @@ set.file.extension = function(filename, extension, fsep=.Platform$file.sep) {
 get.file.extension = function(filename, fsep=.Platform$file.sep) {
     ext = rep("",length(filename))
     has.dot.extension = substring(filename, nchar(filename))=="."
-    filename = gsub("\\",fsep,filename,fixed=TRUE)
+    if (.Platform$OS.type == "windows")
+        filename = gsub("\\",fsep,filename,fixed=TRUE)
     split = strsplit(filename,fsep,fixed=TRUE)
     split = sapply( split, function(x) x[length(x)] )
     split = strsplit(split,".",fixed=TRUE)
@@ -40,7 +42,9 @@ default.file.extension = function(filename, extension, force=FALSE) {
 create.variable.name = function( filename, prefix = NULL, fsep = .Platform$file.sep )
 {
     has.dot.extension = substring(filename, nchar(filename))=="."
-    varname = gsub("\\",fsep,filename,fixed=TRUE)
+    varname = filename
+    if (.Platform$OS.type == "windows")
+        varname = gsub("\\",fsep,varname,fixed=TRUE)
     varname = strsplit(varname,fsep,fixed=TRUE)[[1]]
     varname = varname[length(varname)]
     varname = strsplit(varname,".",fixed=TRUE)[[1]]

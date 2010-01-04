@@ -8,8 +8,8 @@
 \tabular{ll}{
 Package: \tab RSAGA\cr
 Type: \tab Package\cr
-Version: \tab 0.9-5\cr
-Date: \tab 2009-03-01\cr
+Version: \tab 0.9-6\cr
+Date: \tab 2010-01-04\cr
 License: \tab GPL-2\cr
 }
 RSAGA provides direct access to SAGA functions including a comprehensive set
