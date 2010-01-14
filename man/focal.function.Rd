@@ -60,13 +60,13 @@ gapply(in.grid, fun, varnames, mw.to.vector=TRUE, mw.na.rm=TRUE, ...)
         in the output file(s); if missing, use the same nodata value as
         specified in the header of the input grid file}
   \item{na.strings}{passed on to \code{\link{scan}}}
-  \item{search.mode}{character, either \code{\dQuote{circle}} (default) for a
-        circular search window, or \code{\dQuote{square}} for a squared one.}
+  \item{search.mode}{character, either \code{"circle"} (default) for a
+        circular search window, or \code{"square"} for a squared one.}
   \item{digits}{numeric, specifying the number of digits to be used
         for output grid file.}
   \item{dec}{character, specifying the decimal mark to be used for
         input and output.}
-  \item{quiet}{If \code{TRUE}, gives some output (\code{\dQuote{*}}) after
+  \item{quiet}{If \code{TRUE}, gives some output (\code{"*"}) after
         every 10th line of the grid file and when the job is done.}
   \item{nlines}{Number of lines to be processed; useful for testing purposes.}
   \item{mw.to.vector}{logical: Should the content of the moving window
@@ -105,7 +105,7 @@ of \code{focal.function} is passed on to \code{fun}.
 Optionally, \code{fun} should support the following feature: If no argument
 is passed to it, then it should return a character vector giving variable
 names to be used for naming the output grids. The call \code{\link{resid.minmedmax}()},
-for example, returns \code{c(\dQuote{rmin},\dQuote{rmed},\dQuote{rmax})}; this vector must
+for example, returns \code{c("rmin","rmed","rmax")}; this vector must
 have the same length as the numeric vector returned when moving window
 data is passed to the function. This feature is only used if no
 \code{varnames} argument is provided. Note that the result is currently

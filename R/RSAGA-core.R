@@ -1,10 +1,15 @@
 
-rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
-    check.libpath=TRUE, check.SAGA=TRUE, check.PATH=TRUE,
-    check.windowsdefault=.Platform$OS.type=="windows" )
+rsaga.env = function( workspace=".", 
+    cmd = ifelse(.Platform$OS.type=="windows", "saga_cmd.exe", "saga_cmd"), 
+    path, modules,
+    check.libpath = TRUE, 
+    check.SAGA = TRUE, 
+    check.PATH = .Platform$OS.type == "windows",
+    check.os.default = TRUE,
+    os.default.path = ifelse(.Platform$OS.type=="windows", "C:/Progra~1/SAGA-GIS", "/usr/local/bin") )
 {
     rsaga.get.possible.SAGA.paths = function( check.libpath, check.SAGA,
-            check.PATH, check.windowsdefault )
+            check.PATH, check.os.default, os.default.path )
     {
         path = c()
         if (check.libpath) {
@@ -30,7 +35,7 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
                 next.path = ""
                 while ((i <= nchar(os.path)) & (substr(os.path,i,i) != ";")) {
                     # repeat until end of PATH or ";":
-                    if (substr(os.path,i,i) == '"') {
+                    if (substr(os.path,i,i) == '"') { ## potential problems under unix??
                         # if a quote begins, ignore any ";"s:
                         i = i + 1 # skip the quotation mark
                         while ((i <= nchar(os.path)) & (substr(os.path,i,i) != '"')) {
@@ -39,7 +44,7 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
                             next.path = paste(next.path, substr(os.path,i,i), sep="")
                             i = i + 1
                         } # until end of PATH or end of quotation
-                        if (substr(os.path,i,i) != '"') {
+                        if (substr(os.path,i,i) != '"') { ## potential problems under unix??
                             # unlikely case that quotation ends at the end of PATH,
                             # with the closing quotation mark missing:
                             next.path = paste(next.path, substr(os.path,i,i), sep="")
@@ -55,10 +60,12 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
                 i = i + 1
             } # until end of PATH
         }
-
-        if (check.windowsdefault)
-            path = c(path, "C:/Progra~1/saga_vc")
         
+        if (check.os.default) {
+            if (!is.null(os.default.path))
+                path = c(path, os.default.path)
+        }
+
         return(path)
     }
 
@@ -76,7 +83,8 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
     }
     if (is.null(path)) {
         path = rsaga.get.possible.SAGA.paths( check.libpath, check.SAGA,
-                                    check.PATH, check.windowsdefault )
+                                    check.PATH, check.os.default,
+                                    os.default.path = os.default.path )
         if (length(path)==0) {
             warning("don't know where to look for SAGA command line program, no paths specified",
                 "\nTrying to find it in the current working directory...")
@@ -98,9 +106,9 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
     }    
 
     if (missing(modules)) {
-        #modules = Sys.getenv("SAGA_MLB")
-        #if (modules == "") 
         modules = file.path(path,"modules")
+        if ( .Platform$OS.type == "unix") 
+            modules = "/usr/local/lib/saga"
     } else {
         if (modules == "") modules = getwd()
     }
@@ -123,6 +131,8 @@ rsaga.env = function( workspace=".", cmd="saga_cmd.exe", path, modules,
 rsaga.get.libraries = function(path=rsaga.env()$modules, dll=.Platform$dynlib.ext)
 {
     dllnames = dir(path,paste("^.*\\",dll,"$",sep=""))
+    if (.Platform$OS.type == "unix")
+        dllnames = substr(dllnames, 4, nchar(dllnames)) # remove the "lib"
     return( gsub(dll,"",dllnames,fixed=TRUE ) )
 }
 
@@ -136,10 +146,14 @@ rsaga.get.lib.modules = function(lib, env=rsaga.env(), interactive=FALSE)
         intern=TRUE, show.output.on.console=FALSE, invisible=TRUE,
         reduce.intern=FALSE)
 
-    wh = which(gsub(" ","",tolower(rawres))=="availablemodules:")
+    wh = which( gsub(" ","",tolower(rawres)) == "availablemodules:" )
 
     if (length(wh) > 0) {
         rawres = rawres[ (wh[length(wh)]+1) : length(rawres) ]
+        rawres = rawres[ rawres != "" ]
+        rawres = rawres[ rawres != "type -h or --help for further information" ]
+    }
+    if (length(wh) > 0) {
         rawres = strsplit(rawres,"\t- ")
         mcodes = c()
         mnames = c()
@@ -215,8 +229,8 @@ rsaga.get.usage = function(lib, module, env=rsaga.env(), show=TRUE)
     }
 
     res = NULL
-    usage = rsaga.geoprocessor(lib,module,param=list(h=""),env=env,
-        intern=TRUE,show=FALSE,silent=FALSE)
+    usage = rsaga.geoprocessor(lib, module, param = list(h=""), env = env,
+        intern = TRUE, show.output.on.console = FALSE, silent = FALSE)
     skip = 0
     while ((length(usage)>(1+skip)) & (substr(usage[1+skip],1,6)!="Usage:")) {
         if (substr(usage[1+skip],1,8) %in% 
@@ -336,10 +350,18 @@ rsaga.geoprocessor = function(
     setwd(env$workspace)
     Sys.setenv(SAGA=env$path, SAGA_MLB=env$modules)
     
-    command = paste('"', env$path, .Platform$file.sep, env$cmd, '"',
-                    " ", lib, sep="")
+    if (.Platform$OS.type == "windows") {
+        # It is safer to use quotes under Windows:
+        command = paste( shQuote( paste( env$path, .Platform$file.sep, env$cmd, sep="" ) ),
+                        " ", lib, sep="")
+    } else {
+        # Trying to use quotes under Unix too:
+        command = paste( shQuote( paste( env$path, .Platform$file.sep, env$cmd, sep="" ) ),
+                        " ", "lib", lib, sep="")
+    }
+    
     if (!is.null(module)) {
-        if (is.character(module)) module = paste('"',module,'"',sep="")
+        if (is.character(module)) module = shQuote(module)
         command = paste(command, module)
         if (silent)
             command = paste(command, "-silent")
@@ -372,9 +394,14 @@ rsaga.geoprocessor = function(
 #        close(batchfile)
 #        command = batchfilename
 #    }
-    res = system( command, intern=intern,
-        show.output.on.console=show.output.on.console, 
-        invisible=invisible, ...)
+    if (.Platform$OS.type == "windows") {
+        res = system( command, intern=intern,
+            show.output.on.console=show.output.on.console, 
+            invisible=invisible, ...)
+    } else {
+        res = system( command, intern=intern, ...)
+        # 'show.output.on.console' and 'invisible' only work under Windows
+    }
 #    if (beep.off & .Platform$OS.type=="windows") unlink(batchfilename)
     if (intern) {
         if (reduce.intern) {

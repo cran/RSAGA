@@ -1,2 +1,0 @@
-echo "Package 'RSAGA' can only be installed/used under Windows."
-exit 1
