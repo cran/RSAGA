@@ -814,7 +814,7 @@ rsaga.ordinary.kriging = function(in.shapefile, out.grid,
         
     param = c(param, target)
         
-    rsaga.geoprocessor("geostatistics_kriging", 4, param, ...)
+    rsaga.geoprocessor("geostatistics_kriging", 5, param, ...)
 }
 
 
