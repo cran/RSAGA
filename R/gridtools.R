@@ -593,7 +593,7 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
         # check if the function will return a vector with variable names
         # when called without arguments:
         varnames = try(do.call(fun,list()),silent=TRUE)
-        if (class(varnames) == "try-error") {
+        if (missing(varnames) || class(varnames) == "try-error") {
             if (is.character(fun)) {
                 varnames = gsub(".","",fun,fixed=TRUE)
             } else if (is.function(fun)) {
@@ -778,6 +778,7 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
 
 
 
+
 gapply = function(in.grid,fun,varnames,mw.to.vector=TRUE,mw.na.rm=TRUE,...) {
     # build output filenames:
     if (missing(varnames)) {
@@ -882,7 +883,7 @@ multi.focal.function = function(
         # check if the function will return a vector with variable names
         # when called without arguments:
         out.varnames = try(do.call(fun,list()),silent=TRUE)
-        if (class(out.varnames) == "try-error") {
+        if (missing(out.varnames) || class(out.varnames) == "try-error") {
             if (is.character(fun)) {
                 out.varnames = gsub(".","",fun,fixed=TRUE)
             } else if (is.function(fun)) {
@@ -1018,11 +1019,12 @@ multi.focal.function = function(
                             na.strings = na.strings), 
                         rep(NA, radius) )
                 if (k == 1) {
-                    if (!is.null(in.factor.grid))
+                    if (!is.null(in.factor.grid)) {
                         fac[i+1,] = c( rep(NA, radius), 
                             scan(in.factor.file, nlines = 1, quiet = TRUE,
                                 na.strings = na.strings), 
                             rep(NA, radius) )
+                    }
                 }
             }
             # Process nodata values:
@@ -1043,10 +1045,11 @@ multi.focal.function = function(
             if (!quiet) if ((i %% 100)==0) cat("\n")
             
             y.coord = in.hdr$yllcenter + (in.hdr$nrows - i) * in.hdr$cellsize
-            
+
+            vl0 = as.list(1:N.in)
+
             if (i <= nlines - radius) {
                 # Read a line from the grid file:
-                vl0 = as.list(1:N.in)
                 for (k in 1:N.in) {
                     vl0[[k]] = scan(in.files[[k]], nlines = 1, quiet = TRUE, 
                             dec = dec, na.strings = na.strings)
@@ -1078,9 +1081,10 @@ multi.focal.function = function(
                     vl0[[k]] = rep(NA, in.hdr$ncols)
                 if (!is.null(in.factor.grid))  fac0 = vl0
             }
-            
+
             # Add new line to the look-ahead buffer:
-            vl[[k]] = rbind( vl[[k]][2:(2*radius+1),], t(c( rep(NA,radius), vl0[[k]], rep(NA,radius) )) )
+            for (k in 1:N.in)
+                vl[[k]] = rbind( vl[[k]][2:(2*radius+1),], t(c( rep(NA,radius), vl0[[k]], rep(NA,radius) )) )
             if (!is.null(in.factor.grid))
                 fac = rbind( fac[2:(2*radius+1),], t(c( rep(NA,radius), fac0, rep(NA,radius) )) )
 
@@ -1158,6 +1162,7 @@ multi.focal.function = function(
 
     return(out.filenames)
 }
+
 
 
 
