@@ -1,3 +1,27 @@
+rsaga.search.modules = function(text, modules, search.libs=TRUE, search.modules=TRUE,
+    env=rsaga.env(), ignore.case=TRUE, ...)
+{
+    pattern = paste("^.*",text,sep="")
+    lib = NULL
+    mod = NULL
+    if (search.libs) {
+        lib.nm = rsaga.get.libraries(path=env$modules)
+        wh.lib = grep(pattern,lib.nm,ignore.case=ignore.case)
+        lib = lib.nm[wh.lib]
+    }
+    if (search.modules) {
+        if (missing(modules))  
+            modules = rsaga.get.modules(env=env,...)
+        mod.nm = unlist(sapply(modules,function(x) as.character(x$name)),use.names=FALSE)
+        mod.libs = sapply(modules,function(x) nrow(x))
+        mod.libs = rep(names(mod.libs),mod.libs)
+        wh.mod = grep(pattern,mod.nm,ignore.case=ignore.case)
+        mod = data.frame( lib=mod.libs[wh.mod], module=mod.nm[wh.mod] )
+    }
+    return( list( lib = lib, modules = mod ) )
+}
+
+
 
 rsaga.target = function(
     target = c("user.defined", "grid.system", "target.grid", "header"),
@@ -6,6 +30,11 @@ rsaga.target = function(
     system.nx, system.ny, system.xy, system.d,
     target.grid, header)
 {
+    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
+            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+
     target = match.arg.ext(target, base = 0, numeric = TRUE)
     
     if (target == 3) {
@@ -68,13 +97,23 @@ rsaga.target = function(
 ############################################
 
 
-rsaga.import.gdal = function( in.grid, out.grid, ... ) {
+rsaga.import.gdal = function( in.grid, out.grid, 
+      saga.version = "2.0.4", ... )
+{
     if (missing(out.grid)) {
         out.grid = set.file.extension(in.grid, "")
         out.grid = substr(out.grid, 1, nchar(out.grid) - 1)
     }
-    param = list( GRIDS = out.grid, FILE = in.grid )
-    rsaga.geoprocessor("io_grid_gdal", 0, param=param)
+    if (saga.version == "2.0.5") {
+        param = list( GRIDS = out.grid, FILES = in.grid )
+    } else if (saga.version == "2.0.4") {
+        param = list( GRIDS = out.grid, FILE = in.grid )
+    } else {
+        stop("if using a SAGA GIS version >2.0.5, try saga.version='2.0.5',\n",
+             "for an older version try saga.version='2.0.4' (the default)")
+    }
+    rsaga.geoprocessor("io_gdal", "GDAL: Import Raster", 
+        param=param, ...)
 }
 
 
@@ -95,7 +134,7 @@ rsaga.esri.to.sgrd = function( in.grids,
         stop("must have the same number of input and outpute grids")
     res = c()
     for (i in 1:length(in.grids))
-        res = c(res, rsaga.geoprocessor("io_grid", 1,
+        res = c(res, rsaga.geoprocessor("io_grid", "Import ESRI Arc/Info Grid",
             list(FILE=in.grids[i],GRID=out.sgrds[i]),...) )
     invisible(res)
 }
@@ -120,7 +159,7 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
         stop("must have same number of in-/output grids and 'prec' parameters (or length(prec)==1)")
     res = c()
     for (i in 1:length(in.sgrds))
-        res = c(res, rsaga.geoprocessor("io_grid", 0,
+        res = c(res, rsaga.geoprocessor("io_grid", "Export ESRI Arc/Info Grid",
             list( GRID=in.sgrds[i], FILE=out.grids[i], FORMAT=format, GEOREF=georef, PREC=prec[i]),
             ...))
     invisible(res)
@@ -158,7 +197,8 @@ rsaga.local.morphometry = function( in.dem,
     if (!missing(out.vcurv))
         param = c(param, VCURV=out.vcurv)
     param = c(param, METHOD=method)
-    rsaga.geoprocessor("ta_morphometry",0,param,...)
+    rsaga.geoprocessor("ta_morphometry", "Local Morphometry",
+        param, ...)
 }
 
 rsaga.slope = function( in.dem, out.slope, method = "poly2zevenbergen", ... ) {
@@ -206,6 +246,7 @@ rsaga.fill.sinks = function(in.dem,out.dem,
         param = list( DEM=in.dem, RESULT=out.dem )
         if (missing(minslope)) minslope = 0.01
         minslope = as.numeric(minslope)
+        method = "Fill Sinks (Planchon/Darboux, 2001)"
     } else if (method==3) {
         if (missing(out.flowdir)) {
             out.flowdir = tempfile()
@@ -216,16 +257,19 @@ rsaga.fill.sinks = function(in.dem,out.dem,
             on.exit(unlink(paste(out.wshed,".*",sep="")), add = TRUE)
         }
         param = list(ELEV=in.dem, FILLED=out.dem, FDIR=out.flowdir, WSHED=out.wshed)
+        method = "Fill Sinks (Wang & Liu)"
     } else if (method==4) {
         param = list(ELEV=in.dem, FILLED=out.dem)
+        method = "Fill Sinks XXL (Wang & Liu)"
     }
     if (!is.null(minslope)) param = c( param, MINSLOPE=minslope )
-    rsaga.geoprocessor("ta_preprocessor",method,param,...)
+    rsaga.geoprocessor("ta_preprocessor", method, param, ...)
 }
 
 
 
-rsaga.sink.route = function(in.dem,out.sinkroute,threshold,thrsheight=100,...)
+rsaga.sink.route = function(in.dem, out.sinkroute, 
+    threshold, thrsheight = 100, ...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
     param = list( ELEVATION=in.dem, SINKROUTE=out.sinkroute )
@@ -234,7 +278,8 @@ rsaga.sink.route = function(in.dem,out.sinkroute,threshold,thrsheight=100,...)
     }
     # I guess thrsheight is redundant if threshold is missing/false:
     param = c( param, THRSHEIGHT=as.numeric(thrsheight) )
-    rsaga.geoprocessor("ta_preprocessor", 0, param, ...)
+    rsaga.geoprocessor("ta_preprocessor", "Sink Drainage Route Detection", param, ...)
+    # was: module = 0
 }
 
 
@@ -248,7 +293,8 @@ rsaga.sink.removal = function(in.dem,in.sinkroute,out.dem,method="fill",...)
         param = c(param, SINKROUTE=in.sinkroute)
     }
     param = c( param, DEM_PREPROC=out.dem, METHOD=method )
-    rsaga.geoprocessor("ta_preprocessor", 1, param, ...)
+    rsaga.geoprocessor("ta_preprocessor", "Sink Removal", param, ...)
+    # was: module = 1
 }
 
 
@@ -264,36 +310,17 @@ rsaga.close.gaps = function(in.dem,out.dem,threshold=0.1,...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
     param = list( INPUT=in.dem, RESULT=out.dem, THRESHOLD=as.numeric(threshold) )
-    rsaga.geoprocessor("grid_tools",7,param,...)
+    rsaga.geoprocessor("grid_tools", "Close Gaps", param, ...)
+    # was: module = 7
 }
 
 rsaga.close.one.cell.gaps = function(in.dem,out.dem,...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
     param = list( INPUT = in.dem, RESULT = out.dem )
-    rsaga.geoprocessor("grid_tools", 6, param, ...)
-}
-
-rsaga.search.modules = function(text, modules, search.libs=TRUE, search.modules=TRUE,
-    env=rsaga.env(), ignore.case=TRUE, ...)
-{
-    pattern = paste("^.*",text,sep="")
-    lib = NULL
-    mod = NULL
-    if (search.libs) {
-        lib.nm = rsaga.get.libraries(path=env$modules)
-        wh.lib = grep(pattern,lib.nm,ignore.case=ignore.case)
-        lib = lib.nm[wh.lib]
-    }
-    if (search.modules) {
-        if (missing(modules))  modules = rsaga.get.modules(env=rsaga.env(),...)
-        mod.nm = unlist(sapply(modules,function(x) as.character(x$name)),use.names=FALSE)
-        mod.libs = sapply(modules,function(x) nrow(x))
-        mod.libs = rep(names(mod.libs),mod.libs)
-        wh.mod = grep(pattern,mod.nm,ignore.case=ignore.case)
-        mod = data.frame( lib=mod.libs[wh.mod], module=mod.nm[wh.mod] )
-    }
-    return( list( lib = lib, modules = mod ) )
+    rsaga.geoprocessor("grid_tools", "Close One Cell Gaps", 
+        param, ...)
+    # was: module = 6
 }
 
 
@@ -312,7 +339,8 @@ rsaga.hillshade = function(in.dem, out.grid,
         choices=c("standard","max90deg.standard","combined.shading","ray.tracing"))
     param = list(ELEVATION=in.dem, SHADE=out.grid, METHOD=method,
         AZIMUTH=azimuth, DECLINATION=declination, EXAGGERATION=exaggeration)
-    rsaga.geoprocessor("ta_lighting", 0, param, ...)
+    rsaga.geoprocessor("ta_lighting", "Analytical Hillshading", param, ...)
+    # was: module = 0
 }
 
 
@@ -360,7 +388,9 @@ rsaga.solar.radiation = function(in.dem, out.grid, out.duration, latitude,
             DAY_RANGE_MIN=days[1], DAY_RANGE_MAX=days[2], 
             DAY_STEP=day.step )
     }
-    rsaga.geoprocessor("ta_lighting", 2, param, ...)
+    rsaga.geoprocessor(lib = "ta_lighting", 
+        module = "Incoming Solar Radiation",  # = 2
+        param = param, ...)
 }
 
 
@@ -430,7 +460,9 @@ rsaga.insolation = function(in.dem, in.vapour, in.latitude, in.longitude,
         #stopifnot(!missing(lon.ref.user))
         param = c(param, LON_REF_USER=as.numeric(lon.ref.user))
     }
-    rsaga.geoprocessor("ta_lighting", 3, param, ...)
+    rsaga.geoprocessor(lib = "ta_lighting", 
+        module = "Insolation", # = 3 
+        param = param, ...)
 }
 
 
@@ -459,7 +491,9 @@ rsaga.filter.simple = function(in.grid, out.grid, mode="circle",
     }
     param = list(INPUT=in.grid, RESULT=out.grid, MODE=mode,
         METHOD=method, RADIUS=radius)
-    rsaga.geoprocessor("grid_filter", 0, param, ...)
+    rsaga.geoprocessor(lib = "grid_filter", 
+        module = "Simple Filter", # = 0 
+        param = param, ...)
 }
 
 
@@ -473,7 +507,9 @@ rsaga.filter.gauss = function(in.grid, out.grid, sigma,
     if (round(radius) != radius) stop("'radius' must be an integer (# pixels)")
     stopifnot(radius>=1)
     param = list(INPUT=in.grid, RESULT=out.grid, SIGMA=sigma, RADIUS=radius)
-    rsaga.geoprocessor("grid_filter", 1, param, ...)
+    rsaga.geoprocessor(lib = "grid_filter", 
+        module = "Gaussian Filter", # = 1, 
+        param, ...)
 }
 
 
@@ -519,7 +555,9 @@ rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
     
     param = c(param, CONVERGENCE=convergence)
     
-    rsaga.geoprocessor("ta_hydrology", 0, param, ...)
+    rsaga.geoprocessor(lib = "ta_hydrology", 
+        module = "Parallel Processing", # was = 0
+        param, ...)
 }
 
 
@@ -544,7 +582,9 @@ rsaga.wetness.index = function( in.dem,
                  CS=out.mod.carea, SB=out.wetness.index)
     if (!missing(t.param))
         param = c(param, T=as.numeric(t.param))
-    rsaga.geoprocessor("ta_hydrology",15,param,...)
+    rsaga.geoprocessor(lib = "ta_hydrology",
+        module = "SAGA Wetness Index", # was = 15,
+        param, ...)
 }
 
 
@@ -556,16 +596,27 @@ rsaga.wetness.index = function( in.dem,
 ############################################
 
 
-rsaga.grid.calculus = function(in.grids, out.grid, formula, ...)
+rsaga.grid.calculus = function(in.grids, out.grid, formula,
+    saga.version = "2.0.4", ...)
 {
     in.grids = default.file.extension(in.grids, ".sgrd")
     in.grids = paste(in.grids, collapse = ";")
     if (any(class(formula) == "formula"))
         formula = rev( as.character(formula) )[1]
     formula = gsub(" ", "", formula)
-    param = list( INPUT = in.grids, RESULT = out.grid,
-                  FORMUL = formula )
-    rsaga.geoprocessor("grid_calculus", 1, param, ...)
+    if (saga.version == "2.0.5") {
+        param = list( GRIDS = in.grids, RESULT = out.grid,
+                    FORMULA = formula )
+    } else if (saga.version == "2.0.4") {
+        param = list( INPUT = in.grids, RESULT = out.grid,
+                    FORMUL = formula )
+    } else {
+        stop("if using a SAGA GIS version >2.0.5, try saga.version='2.0.5',\n",
+             "for an older version try saga.version='2.0.4'")
+    }
+    rsaga.geoprocessor(lib = "grid_calculus", 
+        module = "Grid Calculator", # was = 1
+        param, ...)
 }
 
 
@@ -641,7 +692,9 @@ rsaga.contour = function(in.grid,out.shapefile,zstep,zmin,zmax,...) {
         stopifnot(as.numeric(zstep)>0)
         param = c(param, ZSTEP=as.numeric(zstep))
     }
-    rsaga.geoprocessor("shapes_grid", 5, param, ...)
+    rsaga.geoprocessor(lib = "shapes_grid", 
+        module = "Contour Lines from Grid", # was: = 5
+        param, ...)
 }
 
 
@@ -655,8 +708,10 @@ rsaga.add.grid.values.to.points = function(in.shapefile,
     method = match.arg.ext(method, base = 0, ignore = TRUE, numeric = TRUE)
     param = list(SHAPES = in.shapefile, GRIDS = in.grids,
                 RESULT = out.shapefile, INTERPOL = method)
-    rsaga.geoprocessor("shapes_grid", 0, param, ...)
-} # "Add Grid Values to Points" in module "shapes_grid"
+    rsaga.geoprocessor(lib = "shapes_grid", 
+        module = "Add Grid Values to Points", # was: = 0
+        param, ...)
+}
 
 
 rsaga.grid.to.points.randomly = function(in.grid,
@@ -666,11 +721,10 @@ rsaga.grid.to.points.randomly = function(in.grid,
     out.shapefile = default.file.extension(out.shapefile, ".shp")
     if (freq < 1) stop("'freq' must be an integer >=1")
     param = list(GRID = in.grid, FREQ = freq, POINTS = out.shapefile)
-    rsaga.geoprocessor("shapes_grid", 4, param, ...)
+    rsaga.geoprocessor(lib = "shapes_grid", 
+        module = "Grid Values to Points (randomly)", # was: = 4
+        param, ...)
 }
-
-#rsaga.grid.to.points.randomly("dem", "pts", freq = 20)
-
 
 rsaga.grid.to.points = function(in.grids, out.shapefile, 
     in.clip.polygons, exclude.nodata = TRUE, ...)
@@ -681,11 +735,10 @@ rsaga.grid.to.points = function(in.grids, out.shapefile,
                  NODATA = exclude.nodata)
     if (!missing(in.clip.polygons))
         param = c(param, POLYGONS = in.clip.polygons)
-    rsaga.geoprocessor("shapes_grid", 3, param, ...)
-} # "Grid Values to Points" in module "shapes_grid"
-
-
-
+    rsaga.geoprocessor(lib = "shapes_grid", 
+        module = "Grid Values to Points", # was: = 3
+        param, ...)
+}
 
 
 
@@ -694,8 +747,13 @@ rsaga.grid.to.points = function(in.grids, out.shapefile,
 # completing module execution
 rsaga.inverse.distance = function(in.shapefile, out.grid, field, 
         power = 1, maxdist = 100, nmax = 10,
-        target = rsaga.target(), ...)
+        target = rsaga.target(), saga.version = "2.0.4", ...)
 {
+    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
+            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
     if (power <= 0)
@@ -706,22 +764,51 @@ rsaga.inverse.distance = function(in.shapefile, out.grid, field,
         stop("'nmax' must be >0")
     if (field < 0)
         stop("'field' must be an integer >=0")
-    param = list(
-        GRID = out.grid,
-        SHAPES = in.shapefile,
-        FIELD = field,
-        POWER = power,
-        RADIUS = maxdist,
-        NPOINTS = nmax)
-    param = c(param, target)
+
+    if (saga.version == "2.0.4") {
+        module = "Inverse Distance"
+        param = list(
+            GRID = out.grid,
+            SHAPES = in.shapefile,
+            FIELD = field,
+            POWER = power,
+            RADIUS = maxdist,
+            NPOINTS = nmax)
+        param = c(param, target)        
+    } else if (saga.version == "2.0.5") {
+        module = "Inverse Distance Weighted"
+        param = list(
+            GRID_GRID = out.grid,
+            SHAPES = in.shapefile,
+            FIELD = field,
+            WEIGHTING = 0, # IDW
+            POWER = power,
+            RANGE = 0,
+            POINTS = 0,
+            RADIUS = maxdist,
+            NPOINTS = nmax)
+        param = c(param, target)        
+    } else {
+        stop("module name changed from SAGA GIS 2.0.4 to 2.0.5;\n",
+             "module number also changed in an earlier version; try saga.version='2.0.5'\n",
+             "if working with a newer version,\nor saga.version='2.0.4' if working\n",
+             "with an older one; sorry for the inconvenience")
+    }
         
-    rsaga.geoprocessor("grid_gridding", 0, param, ...)
+    rsaga.geoprocessor(lib = "grid_gridding", 
+        module = module, # = 1 (was =0 in earlier SAGA versions...)
+        param, ...)
 }
 
 
 rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
     target = rsaga.target(), ...)
 {
+    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
+            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
     if (field < 0)
@@ -732,18 +819,20 @@ rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
         FIELD = field)
     param = c(param, target)
         
-    rsaga.geoprocessor("grid_gridding", 1, param, ...)
+    rsaga.geoprocessor(lib = "grid_gridding", 
+        module = "Nearest Neighbour", # was: = 2 (=1 in earlier SAGA version)
+        param, ...)
 }
-
-#rsaga.nearest.neighbour("pt", "mydem", field = 0,
-#    target = rsaga.target(target="header", header=read.ascii.grid.header("dem.asc")))
-
-
 
 rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
     quadratic.neighbors = 13, weighting.neighbors = 19,
     target = rsaga.target(), ...)
 {
+    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
+            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
     if (field < 0)
@@ -760,13 +849,20 @@ rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
         WEIGHTING_NEIGHBORS = weighting.neighbors)
     param = c(param, target)
         
-    rsaga.geoprocessor("grid_gridding", 2, param, ...)
+    rsaga.geoprocessor(lib = "grid_gridding", 
+        module = "Modifed Quadratic Shepard", # = 4 (earlier SAGA versions: =2)
+        param, ...)
 }
 
 
 rsaga.triangulation = function(in.shapefile, out.grid, field,
     target = rsaga.target(), ...)
 {
+    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
+            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
     if (field < 0)
@@ -777,7 +873,9 @@ rsaga.triangulation = function(in.shapefile, out.grid, field,
         FIELD = field)
     param = c(param, target)
         
-    rsaga.geoprocessor("grid_gridding", 4, param, ...)
+    rsaga.geoprocessor(lib = "grid_gridding", 
+        module = "Triangulation", # = 5 (earlier SAGA versions: =4)
+        param, ...)
 }
 
 
@@ -789,6 +887,11 @@ rsaga.ordinary.kriging = function(in.shapefile, out.grid,
     nmin = 4, nmax = 20,
     target = rsaga.target(), ...)
 {
+    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
+            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
     if (field < 0)
@@ -814,10 +917,10 @@ rsaga.ordinary.kriging = function(in.shapefile, out.grid,
         
     param = c(param, target)
         
-    rsaga.geoprocessor("geostatistics_kriging", 5, param, ...)
+    rsaga.geoprocessor(lib = "geostatistics_kriging", 
+        module = "Ordinary Kriging", # =5
+        param, ...)
 }
-
-
 
 
 

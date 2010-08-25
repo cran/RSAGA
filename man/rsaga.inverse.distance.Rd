@@ -10,7 +10,7 @@ IDW), nearest neighbors, or modified quadratic shephard.}
 \usage{
 rsaga.inverse.distance(in.shapefile, out.grid, field, 
         power = 1, maxdist = 100, nmax = 10,
-        target = rsaga.target(), ...)
+        target = rsaga.target(), saga.version = "2.0.4", ...)
 rsaga.nearest.neighbour(in.shapefile, out.grid, field,
     target = rsaga.target(), ...)
 rsaga.modified.quadratic.shephard(in.shapefile, out.grid, field,
@@ -35,6 +35,12 @@ rsaga.modified.quadratic.shephard(in.shapefile, out.grid, field,
   \item{target}{list: parameters identifying the target area,
         e.g. the lower left corner and size of grid, or name of a
         reference grid; see \code{\link{rsaga.target}}.}
+  \item{saga.version}{character string, either '2.0.4' (default) or '2.0.5';
+        the inverse distance module name changed from SAGA GIS 2.0.4 to 2.0.5,
+        the rsaga.inverse.distance function is trying to adapt to this situation.
+        If using a different SAGA GIS version, try one of the two supported options,
+        or look at \code{rsaga.get.modules('grid_gridding')}
+        and use \code{rsaga.geoprocessor} directly; sorry for the inconvenience }
   \item{\dots}{Optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
         including the \code{env} RSAGA geoprocessing environment.}
 }
@@ -49,6 +55,15 @@ Classes: E2b. Interpolation of scattered, non-gridded
 multivariate data.}
 \author{Alexander Brenning (R interface), Andre Ringeler and Olaf Conrad (SAGA modules)}
 \note{
+The 'Inverse Distance Weighted' module of SAGA GIS (library 'grid_gridding')
+has changed from SAGA GIS 2.0.4 to 2.0.5. The module now not only support
+inverse-distance weighted interpolation, but also exponential and other weighting
+schemes (command line argument WEIGHTING); these are however not accessible through
+this function, but only through the \code{rsaga.geoprocessor}. See 
+\code{rsaga.get.usage("grid_gridding","Inverse Distance Weighted")} for details.
+This R function furthermore only interfaces the local version of IDW, which uses a
+local search radius (argument 'radius'); the SAGA module now (2.0.5) also supports global IDW.
+
 See the example section in the help file for \code{write.shapefile}
 in package \code{shapefiles} to learn how to apply these interpolation
 functions to a shapefile exported from a data.frame.

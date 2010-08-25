@@ -5,7 +5,7 @@
     It calls the SAGA command line tool to run SAGA modules and pass
     arguments.}
 \usage{
-rsaga.geoprocessor(lib, module = NULL, param = list(), silent = TRUE, 
+rsaga.geoprocessor(lib, module = NULL, param = list(), silent = FALSE, 
         beep.off, show.output.on.console = TRUE, invisible = TRUE, 
         intern = TRUE, env = rsaga.env(), display.command = FALSE, 
         reduce.intern=TRUE, ...)
@@ -16,8 +16,7 @@ rsaga.geoprocessor(lib, module = NULL, param = list(), silent = TRUE,
         the library \code{lib} (see Details).}
   \item{param}{A list of named arguments to be passed to the SAGA module
         (see Examples).}
-  \item{silent}{SAGA command line option \code{-silent}: avoid asking
-        for interactive user input; does NOT turn off SAGA's beep.}
+  \item{silent}{(deprecated)}
   \item{beep.off}{is currently ignored (did never really work and produced
         some unwanted side effects); a warning is produced if \code{beep.off}
         is specified.}

@@ -24,7 +24,7 @@ rsaga.env = function( workspace=".",
         {
             os.path = Sys.getenv("PATH")
     
-            # This won't work:
+            # This won t work:
             #os.paths = strsplit(os.path,";")[[1]]
             # on Windows, filenames may contain a ";"!
     
@@ -140,9 +140,14 @@ rsaga.get.libraries = function(path=rsaga.env()$modules, dll=.Platform$dynlib.ex
 rsaga.get.lib.modules = function(lib, env=rsaga.env(), interactive=FALSE)
 {
     res = NULL
+    
+    if (lib == "opencv") {
+        warning("module 'opencv' in SAGA GIS 2.0.5 produces error\nwhen attempting to request its module listing --> please try again in next version ;-)")
+        # return an empty data.frame of the same format as in the successful situation:
+        return( data.frame( code = numeric(), name = character(), interactive = logical() ) )
+    }
 
-    rawres = rsaga.geoprocessor(lib, module=NULL,
-        silent=FALSE, env=env,
+    rawres = rsaga.geoprocessor(lib, module=NULL, env=env,
         intern=TRUE, show.output.on.console=FALSE, invisible=TRUE,
         reduce.intern=FALSE)
 
@@ -152,6 +157,7 @@ rsaga.get.lib.modules = function(lib, env=rsaga.env(), interactive=FALSE)
         rawres = rawres[ (wh[length(wh)]+1) : length(rawres) ]
         rawres = rawres[ rawres != "" ]
         rawres = rawres[ rawres != "type -h or --help for further information" ]
+        rawres = rawres[ rawres != "error: module" ]
     }
     if (length(wh) > 0) {
         rawres = strsplit(rawres,"\t- ")
@@ -337,7 +343,7 @@ rsaga.html.help = function(lib, module, env=rsaga.env(), ...)
 
 rsaga.geoprocessor = function(
     lib, module = NULL, param = list(),
-    silent = TRUE, beep.off,
+    silent = FALSE, beep.off,
     show.output.on.console = TRUE, invisible = TRUE, intern = TRUE,
     env = rsaga.env(), display.command = FALSE, reduce.intern = TRUE, ... )
 {
@@ -363,8 +369,10 @@ rsaga.geoprocessor = function(
     if (!is.null(module)) {
         if (is.character(module)) module = shQuote(module)
         command = paste(command, module)
-        if (silent)
+        if (silent) {
+            # deprecated; not supported by SAGA GIS 2.0.5
             command = paste(command, "-silent")
+        }
         if (length(param)>0) {
             i = 1
             while (i<=length(param)) {
@@ -385,15 +393,6 @@ rsaga.geoprocessor = function(
     if (display.command) cat(command,"\n")
     if (!missing(beep.off))
         warning("rsaga.geoprocessor currently ignores 'beep.off'")
-#    if (beep.off & .Platform$OS.type=="windows") {
-#        command = gsub("/","\\",command,fixed=TRUE)
-#        batch = c("net stop beep",command)
-#        batchfilename = paste(tempfile(),".bat",sep="")
-#        batchfile = file(batchfilename,"wt")
-#        writeLines(batch,con=batchfile)
-#        close(batchfile)
-#        command = batchfilename
-#    }
     if (.Platform$OS.type == "windows") {
         res = system( command, intern=intern,
             show.output.on.console=show.output.on.console, 
@@ -402,21 +401,8 @@ rsaga.geoprocessor = function(
         res = system( command, intern=intern, ...)
         # 'show.output.on.console' and 'invisible' only work under Windows
     }
-#    if (beep.off & .Platform$OS.type=="windows") unlink(batchfilename)
     if (intern) {
         if (reduce.intern) {
-#            if (beep.off & .Platform$OS.type=="windows") {
-#                removeline = function(x) {
-#                    if (x=="") return(TRUE)
-#                    rmv = c(tolower(batch),"the beep service","more help is available")
-#                    for (txt in rmv)
-#                        if (length(grep(txt,tolower(x),fixed=TRUE)) > 0)
-#                            return(TRUE)
-#                    return(FALSE)
-#                }
-#                while ( removeline(res[1]) )
-#                    res = res[-1]
-#            }
             remove = grep("\r",res,fixed=TRUE)
             if (length(remove) > 0)
                 res = res[ -remove ]

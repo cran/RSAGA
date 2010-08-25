@@ -29,7 +29,9 @@ rsaga.insolation(in.dem, in.vapour, in.latitude, in.longitude,
   \item{horizontal}{logical; project radiation onto a horizontal surface?
         (default: \code{FALSE}, i.e. use the actual inclined surface
         as a reference area) }
-  \item{solconst}{solar constant in Joule; default: 8.164 J}
+  \item{solconst}{solar constant in Joule; default: 8.164 J/cm2/min (=1360.7 kWh/m2;
+        the more commonly used solar constant of 1367 kWh/m2 corresponds
+        to 8.202 J/cm2/min)}
   \item{atmosphere}{height of atmosphere in m; default: 12000m}
   \item{water.vapour.pressure}{if no water vapour grid is given,
         this argument specifies a constant water vapour pressure

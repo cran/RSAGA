@@ -38,8 +38,10 @@ rsaga.solar.radiation(in.dem, out.grid, out.duration, latitude,
   \item{time.range}{numeric vector of length 2: 
         time span (hours of the day) for numerical integration}
   \item{time.step}{time step in hours for numerical integration}
-  \item{days}{a list with components \code{day} and \code{month}
-        specifying a single day of the year for radiation modeling}
+  \item{days}{either a list with components \code{day} and \code{month}
+        specifying a single day of the year for radiation modeling;
+        OR a numeric vector of length 2 specifying the start and end
+        date (see Note below)}
   \item{day.step}{if \code{days} indicates a range of days, this
         specifies the time step (number of days) for calculating
         the incoming solar radiation}

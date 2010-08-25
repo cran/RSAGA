@@ -8,8 +8,8 @@
 \tabular{ll}{
 Package: \tab RSAGA\cr
 Type: \tab Package\cr
-Version: \tab 0.9-7\cr
-Date: \tab 2010-06-01\cr
+Version: \tab 0.91-1\cr
+Date: \tab 2010-08-25\cr
 License: \tab GPL-2\cr
 }
 RSAGA provides direct access to SAGA functions including a comprehensive set
@@ -31,10 +31,12 @@ interpolation.
 
 RSAGA requires the free SAGA GIS (>=2.0.2) and its user-contributed
 modules to be available on your computer.  These can be downloaded under
-GPL via \url{http://www.saga-gis.org/} or directly from
+GPL from
 \url{http://sourceforge.net/projects/saga-gis/}.  Please check 
 \code{\link{rsaga.env}} to make sure that RSAGA can find your 
-local installation of SAGA.
+local installation of SAGA. Also note that SAGA GIS 2.0.5 does not seem
+to work well with the interface functions for interpolation methods (but
+SAGA GIS 2.0.4 does).
 
 Thanks to Olaf Conrad, Andre Ringeler and all the other SAGA
 developers and contributors providing this excellent geocomputing tool!

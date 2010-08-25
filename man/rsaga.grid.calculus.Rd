@@ -4,7 +4,8 @@
 \title{SAGA Module Grid Calculus}
 \description{Perform Arithmetic Operations on Grids}
 \usage{
-rsaga.grid.calculus(in.grids, out.grid, formula, ...)
+rsaga.grid.calculus(in.grids, out.grid, formula, 
+        saga.version = "2.0.4", ...)
 rsaga.linear.combination(in.grids, out.grid, 
         coef, cf.digits = 16, remove.zeros = FALSE, 
         remove.ones = TRUE, ...)
@@ -19,6 +20,12 @@ rsaga.linear.combination(in.grids, out.grid,
         operation to be performed on the \code{in.grids}
         (see Details); if this is a formula, only the right hand side
         will be used.}
+  \item{saga.version}{character string, either '2.0.4' (default) or '2.0.5';
+        the command line arguments for the grid calculator module 
+        changed from SAGA GIS 2.0.4 to 2.0.5, the function is now
+        able to handle both situations; if using a different SAGA GIS
+        version, try one of these two options, or look at \code{rsaga.get.usage}
+        and use \code{rsaga.geoprocessor} directly; sorry for the inconvenience }
   \item{coef}{numeric: coefficient vector to be used for the
         linear combination of the \code{in.grids}. If \code{coef}
         as one more element than \code{in.grids}, the first one
