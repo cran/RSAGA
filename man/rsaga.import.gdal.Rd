@@ -5,13 +5,17 @@
 writing grids from/to ASCII grids and Rd files. Grids are stored in
 matrices, their headers in lists.}
 \usage{
-rsaga.import.gdal(in.grid, out.grid, ...)
+rsaga.import.gdal(in.grid, out.grid, saga.version = "2.0.4", ...)
 }
 \arguments{
   \item{in.grid}{file name of a grid in a format supported by GDAL}
   \item{out.grid}{output SAGA grid file name;
     defaults to \code{in.grid} with the file extension being removed;
     file extension should not be specified, it defaults to .sgrd}
+  \item{saga.version}{character string, indicating the SAGA GIS version number;
+    currently only 2.0.4 and 2.0.5 are supported. The reason for providing
+    SAGA GIS version support is that some of the SAGA command line argument
+    names have changed}
   \item{...}{additional arguments to be
         passed to \code{rsaga.geoprocessor} }
 }

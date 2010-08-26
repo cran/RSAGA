@@ -7,7 +7,9 @@ based on (1) fitting the extent to the input data,
 (2) an existing SAGA grid file,
 (3) user-defined parameters, or (4) the header data of
 an ASCII grid. Intended to be used with RSAGA's interpolation
-functions.
+functions. WARNING: THIS FUNCTION LIKELY DOESN'T WORK WITH
+SAGA GIS 2.0.5 BECAUSE OF A CHANGE IN THE PARAMETERIZATION
+OF TARGET GRIDS...
 }
 \usage{
 rsaga.target(target = c("user.defined", "grid.system", 

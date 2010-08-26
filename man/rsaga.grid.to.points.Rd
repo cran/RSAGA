@@ -20,7 +20,8 @@ rsaga.grid.to.points.randomly(in.grid, out.shapefile, freq, ...)
         to be used for clipping/masking an area}
   \item{exclude.nodata}{logical (default: \code{TRUE}):
         skip 'nodata' grid cells?}
-  \item{freq}{integer >=1: sampling frequency in percent}
+  \item{freq}{integer >=1: sampling frequency: on average 1 out of 'freq' 
+        grid cells are selected}
   \item{\dots}{Optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
         including the \code{env} RSAGA geoprocessing environment.}
 }
