@@ -11,7 +11,7 @@ model (DEM) downwards from the highest to the lowest cell.}
 rsaga.parallel.processing(in.dem, in.sinkroute, in.weight, 
     out.carea, out.cheight, out.cslope, out.caspect, out.flowpath, 
     step, method = "mfd", linear.threshold = Inf, 
-    convergence = 1.1, ...)
+    convergence = 1.1, env = rsaga.env(), ...)
 }
 \arguments{
   \item{in.dem}{input: digital elevation model (DEM) as SAGA grid file
@@ -37,6 +37,8 @@ rsaga.parallel.processing(in.dem, in.sinkroute, in.weight,
   \item{convergence}{numeric >=0: a parameter for tuning convergent/
         divergent flow; default value of \code{1.1} gives realistic
         results and should not be changed}
+  \item{env}{list, setting up a SAGA geoprocessing environment
+        as created by \code{\link{rsaga.env}}}
   \item{\dots}{further arguments to \code{\link{rsaga.geoprocessor}}}
 }
 \details{Refer to the references for details on the available algorithms.}
@@ -80,9 +82,28 @@ of hillslope flow paths for distributed hydrological modelling using digital
 terrain models. Hydrological Processes, 5: 59-79.
 }
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
-\note{This function uses module 0 from SAGA library \code{ta_hydrology}.}
+\note{This function uses module \code{Parallel Processing} (version 2.0.7: 
+\code{Catchment Area (Parallel)} from SAGA library \code{ta_hydrology}.
+
+The SAGA GIS 2.0.6+ version of the module adds more (optional) input and 
+output grids that are currently not supported by this wrapper function.
+Use \code{\link{rsaga.geoprocessor}} for access to these options,
+and see \code{rsaga.get.usage("ta_hydrology","Catchment Area (Parallel)")}
+for information on new arguments.}
 \seealso{\code{\link{rsaga.wetness.index}},
 \code{\link{rsaga.geoprocessor}}, \code{\link{rsaga.env}} }
-% \examples{}
+\examples{
+\dontrun{
+# SAGA GIS 2.0.6+:
+rsaga.get.usage("ta_hydrology","Catchment Area (Parallel)")
+# earlier versions of SAGA GIS:
+rsaga.get.usage("ta_hydrology","Parallel Processing")
+# execute model with typical settings:
+rsaga.parallel.processing(in.dem = "dem", out.carea = "carea", out.cslope = "cslope")
+# cslope is in radians - convert to degree:
+fac = round(180/pi, 4)
+formula = paste(fac, "*a", sep = "")
+rsaga.grid.calculus("cslope", "cslopedeg", formula)
+}}
 \keyword{spatial}
 \keyword{interface}

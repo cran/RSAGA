@@ -10,12 +10,12 @@ IDW), nearest neighbors, or modified quadratic shephard.}
 \usage{
 rsaga.inverse.distance(in.shapefile, out.grid, field, 
         power = 1, maxdist = 100, nmax = 10,
-        target = rsaga.target(), saga.version = "2.0.4", ...)
+        target = rsaga.target(), env = rsaga.env(), ...)
 rsaga.nearest.neighbour(in.shapefile, out.grid, field,
-    target = rsaga.target(), ...)
+    target = rsaga.target(), env = rsaga.env(), ...)
 rsaga.modified.quadratic.shephard(in.shapefile, out.grid, field,
     quadratic.neighbors = 13, weighting.neighbors = 19,
-    target = rsaga.target(), ...)
+    target = rsaga.target(), env = rsaga.env(), ...)
 }
 \arguments{
   \item{in.shapefile}{Input: point shapefile
@@ -35,12 +35,8 @@ rsaga.modified.quadratic.shephard(in.shapefile, out.grid, field,
   \item{target}{list: parameters identifying the target area,
         e.g. the lower left corner and size of grid, or name of a
         reference grid; see \code{\link{rsaga.target}}.}
-  \item{saga.version}{character string, either '2.0.4' (default) or '2.0.5';
-        the inverse distance module name changed from SAGA GIS 2.0.4 to 2.0.5,
-        the rsaga.inverse.distance function is trying to adapt to this situation.
-        If using a different SAGA GIS version, try one of the two supported options,
-        or look at \code{rsaga.get.modules('grid_gridding')}
-        and use \code{rsaga.geoprocessor} directly; sorry for the inconvenience }
+  \item{env}{RSAGA geoprocessing environment created by \code{\link{rsaga.env}},
+        required because module(s) depend(s) on SAGA version }
   \item{\dots}{Optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
         including the \code{env} RSAGA geoprocessing environment.}
 }

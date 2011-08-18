@@ -12,8 +12,8 @@ rsaga.search.modules = function(text, modules, search.libs=TRUE, search.modules=
     if (search.modules) {
         if (missing(modules))  
             modules = rsaga.get.modules(env=env,...)
-        mod.nm = unlist(sapply(modules,function(x) as.character(x$name)),use.names=FALSE)
-        mod.libs = sapply(modules,function(x) nrow(x))
+        mod.nm = unlist(sapply(modules,function(x) if (is.atomic(x)) NULL else as.character(x$name)),use.names=FALSE)
+        mod.libs = sapply(modules,function(x) if (is.atomic(x)) 0 else nrow(x))
         mod.libs = rep(names(mod.libs),mod.libs)
         wh.mod = grep(pattern,mod.nm,ignore.case=ignore.case)
         mod = data.frame( lib=mod.libs[wh.mod], module=mod.nm[wh.mod] )
@@ -31,7 +31,7 @@ rsaga.target = function(
     target.grid, header)
 {
     warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
-            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
+            "modules do not seem to work well with SAGA GIS 2.0.5+; I tried to figure out\n",
             "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
             "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
 
@@ -97,23 +97,19 @@ rsaga.target = function(
 ############################################
 
 
-rsaga.import.gdal = function( in.grid, out.grid, 
-      saga.version = "2.0.4", ... )
+rsaga.import.gdal = function( in.grid, out.grid, env = rsaga.env(), ... )
 {
     if (missing(out.grid)) {
         out.grid = set.file.extension(in.grid, "")
         out.grid = substr(out.grid, 1, nchar(out.grid) - 1)
     }
-    if (saga.version == "2.0.5") {
-        param = list( GRIDS = out.grid, FILES = in.grid )
-    } else if (saga.version == "2.0.4") {
+    if (env$version == "2.0.4") {
         param = list( GRIDS = out.grid, FILE = in.grid )
     } else {
-        stop("if using a SAGA GIS version >2.0.5, try saga.version='2.0.5',\n",
-             "for an older version try saga.version='2.0.4' (the default)")
+        param = list( GRIDS = out.grid, FILES = in.grid )
     }
     rsaga.geoprocessor("io_gdal", "GDAL: Import Raster", 
-        param=param, ...)
+        param = param, env = env, ...)
 }
 
 
@@ -175,7 +171,7 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
 
 rsaga.local.morphometry = function( in.dem, 
     out.slope, out.aspect, out.curv, out.hcurv, out.vcurv,
-    method = "poly2zevenbergen", ...)
+    method = "poly2zevenbergen", env = rsaga.env(), ...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
     choices = c("maxslope","maxtriangleslope","lsqfitplane",
@@ -197,8 +193,11 @@ rsaga.local.morphometry = function( in.dem,
     if (!missing(out.vcurv))
         param = c(param, VCURV=out.vcurv)
     param = c(param, METHOD=method)
-    rsaga.geoprocessor("ta_morphometry", "Local Morphometry",
-        param, ...)
+    
+    module = "Slope, Aspect, Curvature"
+    if (any(c("2.0.4","2.0.5","2.0.6") == env$version)) module = "Local Morphometry"
+    
+    rsaga.geoprocessor("ta_morphometry", module, param, env = env, ...)
 }
 
 rsaga.slope = function( in.dem, out.slope, method = "poly2zevenbergen", ... ) {
@@ -344,12 +343,186 @@ rsaga.hillshade = function(in.dem, out.grid,
 }
 
 
+rsaga.pisr = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL, 
+    in.latitude.grid = NULL, in.longitude.grid = NULL,
+    out.direct.grid, out.diffuse.grid, out.total.grid = NULL, 
+    out.ratio.grid = NULL, out.duration, out.sunrise, out.sunset,
+    local.svf = TRUE, latitude, 
+    unit=c("kWh/m2","kJ/m2","J/cm2"), solconst=1367.0, 
+    enable.bending = FALSE, bending.radius = 6366737.96,
+    bending.lat.offset = "user", bending.lat.ref.user = 0,
+    bending.lon.offset = "center", bending.lon.ref.user = 0,
+    method = c("height","components","lumped"),
+    hgt.atmosphere = 12000, hgt.water.vapour.pressure = 10,
+    cmp.pressure = 1013, cmp.water.content = 1.68, cmp.dust = 100,
+    lmp.transmittance = 70,
+    time.range = c(0,24), time.step = 0.5,
+    start.date = list(day=21, month=3), end.date = NULL, day.step = 5,
+    env = rsaga.env(), ...)
+{
+    if ( (env$version == "2.0.4" | env$version == "2.0.5") ) {
+        stop("rsaga.pisr only for SAGA GIS 2.0.6+;\n",
+             " use rsaga.solar.radiation for older versions of SAGA GIS")
+    }
+
+    in.dem = default.file.extension(in.dem,".sgrd")
+    if (!is.null(in.svf.grid)) in.svf.grid = default.file.extension(in.svf.grid,".sgrd")
+    if (!is.null(in.vapour.grid)) in.vapour.grid = default.file.extension(in.vapour.grid,".sgrd")
+    if (!is.null(in.latitude.grid)) in.latitude.grid = default.file.extension(in.latitude.grid,".sgrd")
+    if (!is.null(in.longitude.grid)) in.longitude.grid = default.file.extension(in.longitude.grid,".sgrd")
+    if (missing(out.direct.grid)) {
+        out.direct.grid = tempfile()
+        on.exit(unlink(paste(out.direct.grid,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.diffuse.grid)) {
+        out.diffuse.grid = tempfile()
+        on.exit(unlink(paste(out.diffuse.grid,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.total.grid)) {
+        out.total.grid = tempfile()
+        on.exit(unlink(paste(out.total.grid,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.ratio.grid)) {
+        out.ratio.grid = tempfile()
+        on.exit(unlink(paste(out.ratio.grid,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.duration)) {
+        out.duration = tempfile()
+        on.exit(unlink(paste(out.duration,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.sunrise)) {
+        out.sunrise = tempfile()
+        on.exit(unlink(paste(out.sunrise,".*",sep="")), add = TRUE)
+    }
+    if (missing(out.sunset)) {
+        out.sunset = tempfile()
+        on.exit(unlink(paste(out.sunset,".*",sep="")), add = TRUE)
+    }
+
+    unit = match.arg.ext(unit,numeric=TRUE,ignore.case=TRUE,base=0)
+    method = match.arg.ext(method, numeric = TRUE, ignore.case = TRUE, base = 0)
+    bending.lat.offset = match.arg.ext(bending.lat.offset, c("bottom","center","top","user"), 
+        numeric = TRUE, ignore.case = TRUE, base = 0)
+    bending.lon.offset = match.arg.ext(bending.lon.offset, c("left","center","right","user"), 
+        numeric = TRUE, ignore.case = TRUE, base = 0)
+
+    stopifnot( (latitude>=-90) & (latitude<=90) )
+    stopifnot( length(time.range)==2 )
+    stopifnot( all(time.range>=0) & all(time.range<=24) & (time.range[1]<time.range[2]) )
+    stopifnot( (time.step>0) & (time.step<=12) )
+    stopifnot( (day.step>0) & (day.step<=100) )
+    stopifnot( is.logical(local.svf) )
+    stopifnot( is.logical(enable.bending) )
+
+    param = list( GRD_DEM=in.dem, 
+        GRD_DIRECT = out.direct.grid, GRD_DIFFUS = out.diffuse.grid,
+        GRD_TOTAL=out.total.grid, GRD_RATIO=out.ratio.grid,
+        DURATION = out.duration, 
+        SUNRISE = out.sunrise, SUNSET = out.sunset,
+        UNITS=unit, SOLARCONST=as.numeric(solconst), LOCALSVF = local.svf,
+        BENDING_BENDING = enable.bending,
+        METHOD=method,
+        LATITUDE=as.numeric(latitude), 
+        DHOUR = time.step )
+        
+    if (!is.null(in.svf.grid)) param = c( param, GRD_SVF=in.svf.grid )
+    if (!is.null(in.vapour.grid)) param = c( param, GRD_VAPOUR=in.vapour.grid )
+    if (!is.null(in.latitude.grid)) param = c( param, GRD_LAT=in.latitude.grid )
+    if (!is.null(in.longitude.grid)) param = c( param, GRD_LON=in.longitude.grid )
+
+    if (enable.bending) {
+        param = c( param,
+            BENDING_RADIUS = bending.radius,
+            BENDING_LAT_OFFSET = bending.lat.offset,
+            BENDING_LAT_REF_USER = bending.lat.ref.user,
+            BENDING_LON_OFFSET = bending.lon.offset,
+            BENDING_LON_REF_USER = bending.lon.ref.user )
+    }
+    
+    if (method == 0) {
+        param = c(param, ATMOSPHERE = as.numeric(hgt.atmosphere),
+            VAPOUR = as.numeric(hgt.water.vapour.pressure))
+    } else if (method == 1) {
+        param = c(param, PRESSURE = as.numeric(cmp.pressure), 
+            WATER = as.numeric(cmp.water.content), DUST = as.numeric(cmp.dust))
+    } else if (method == 2) {
+        stopifnot( (lmp.transmittance>=0) & (lmp.transmittance<=100) )
+        param = c(param, LUMPED = as.numeric(lmp.transmittance))
+    } else stopifnot( method %in% c(0:2) )
+        
+    if (is.null(start.date)) { # one year
+        stopifnot( is.null(end.date) )
+        param = c( param, PERIOD = 2, DAY_A = 0, MONTH_A = 0,
+                      DAY_B = 30, MONTH_B = 11 )
+    } else {
+        if (is.null(end.date)) {
+            param = c( param, PERIOD = 1 ) # single day ... or moment (later)
+        } else param = c( param, PERIOD = 2 )
+        stopifnot(is.list(start.date))
+        stopifnot(length(start.date) == 2)
+        stopifnot(all(names(start.date %in% c("day","month"))))
+        stopifnot( (start.date$day>=1) & (start.date$day<=31) )
+        stopifnot( (start.date$month>=1) & (start.date$month<=12) )
+        param = c( param, DAY_A = start.date$day - 1,
+                    MON_A = start.date$month - 1 )
+        if (is.null(end.date)) {
+            # check if moment:
+            stopifnot(length(time.range) <= 2)
+            if (length(time.range) == 2) {
+                if (time.range[2] == time.range[1])
+                    time.range = time.range[1]
+            }
+            if (length(time.range) == 1) {
+                # moment
+                param$PERIOD = 0
+                stopifnot(time.range >= 0 & time.range <= 24)
+                param = c(param, MOMENT = round(time.range,3))
+            } else {
+                stopifnot(time.range[1] >= 0 & time.range[1] <= 24)
+                stopifnot(time.range[2] >= 0 & time.range[2] <= 24)
+                stopifnot(time.range[1] < time.range[2])
+                param = c(param, HOUR_RANGE_MIN = time.range[1],
+                    HOUR_RANGE_MAX = time.range[2])
+            }
+        } else {
+            # range of days:
+            stopifnot(is.list(end.date))
+            stopifnot(length(end.date) == 2)
+            stopifnot(all(names(end.date %in% c("day","month"))))
+            stopifnot( (end.date$day>=1) & (end.date$day<=31) )
+            stopifnot( (end.date$month>=1) & (end.date$month<=12) )
+            param = c( param, DAY_B = end.date$day - 1,
+                        MON_B = end.date$month - 1,
+                        DDAYS = day.step )
+            if (is.null(time.range)) time.range = c(0,24)
+            stopifnot(length(time.range) == 2)
+            stopifnot(time.range[1] >= 0 & time.range[1] <= 24)
+            stopifnot(time.range[2] >= 0 & time.range[2] <= 24)
+            stopifnot(time.range[1] < time.range[2])
+            param = c(param, HOUR_RANGE_MIN = time.range[1],
+                HOUR_RANGE_MAX = time.range[2])
+        }
+    }
+    
+    rsaga.geoprocessor(lib = "ta_lighting", 
+        module = "Potential Incoming Solar Radiation",  # = 2
+        param = param, ...)
+}
+
+
+
 rsaga.solar.radiation = function(in.dem, out.grid, out.duration, latitude, 
     unit=c("kWh/m2","J/m2"), solconst=1367.0, method=c("lumped","components"),
     transmittance=70, pressure=1013, water.content=1.68, dust=100,
     time.range=c(0,24), time.step=1,
-    days=list(day=21,month=3), day.step=5, ...)
+    days=list(day=21,month=3), day.step=5,
+    env = rsaga.env(), ...)
 {
+    if ( !(env$version == "2.0.4" | env$version == "2.0.5") ) {
+        stop("rsaga.solar.radiation only for SAGA GIS 2.0.4 / 2.0.5;\n",
+             " use rsaga.pisr for SAGA GIS 2.0.6+")
+    }
+
     in.dem = default.file.extension(in.dem,".sgrd")
     if (missing(out.duration)) {
         out.duration = tempfile()
@@ -522,7 +695,8 @@ rsaga.filter.gauss = function(in.grid, out.grid, sigma,
 
 rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
     out.carea, out.cheight, out.cslope, out.caspect, out.flowpath,
-    step, method="mfd", linear.threshold=Inf, convergence=1.1, ...)
+    step, method="mfd", linear.threshold=Inf, convergence=1.1,
+    env = rsaga.env(), ...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
     method = match.arg.ext(method, choices=c("d8","rho8","braunschweig","dinf","mfd"),
@@ -555,9 +729,11 @@ rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
     
     param = c(param, CONVERGENCE=convergence)
     
-    rsaga.geoprocessor(lib = "ta_hydrology", 
-        module = "Parallel Processing", # was = 0
-        param, ...)
+    module = "Catchment Area (Parallel)"
+    if (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")
+        module = "Parallel Processing"
+    
+    rsaga.geoprocessor(lib = "ta_hydrology", module = module, param, env = env, ...)
 }
 
 
@@ -597,31 +773,29 @@ rsaga.wetness.index = function( in.dem,
 
 
 rsaga.grid.calculus = function(in.grids, out.grid, formula,
-    saga.version = "2.0.4", ...)
+    env = rsaga.env(), ...)
 {
     in.grids = default.file.extension(in.grids, ".sgrd")
     in.grids = paste(in.grids, collapse = ";")
     if (any(class(formula) == "formula"))
         formula = rev( as.character(formula) )[1]
     formula = gsub(" ", "", formula)
-    if (saga.version == "2.0.5") {
-        param = list( GRIDS = in.grids, RESULT = out.grid,
-                    FORMULA = formula )
-    } else if (saga.version == "2.0.4") {
+    if (env$version == "2.0.4") {
         param = list( INPUT = in.grids, RESULT = out.grid,
                     FORMUL = formula )
     } else {
-        stop("if using a SAGA GIS version >2.0.5, try saga.version='2.0.5',\n",
-             "for an older version try saga.version='2.0.4'")
+        param = list( GRIDS = in.grids, RESULT = out.grid,
+                    FORMULA = formula )
     }
     rsaga.geoprocessor(lib = "grid_calculus", 
         module = "Grid Calculator", # was = 1
-        param, ...)
+        param = param, env = env, ...)
 }
 
 
 rsaga.linear.combination = function(in.grids, out.grid, coef, 
-    cf.digits = 16, remove.zeros = FALSE, remove.ones = TRUE, ...)
+    cf.digits = 16, remove.zeros = FALSE, remove.ones = TRUE, 
+    env = rsaga.env(), ...)
 {
     fmt = paste("%.", cf.digits, "f", sep = "")
     coef = sprintf(fmt, coef)
@@ -672,7 +846,7 @@ rsaga.linear.combination = function(in.grids, out.grid, coef,
     }
     
     rsaga.grid.calculus(in.grids = in.grids[!omit[-1]], out.grid = out.grid,
-        formula = formula, ...)
+        formula = formula, env = env, ...)
 }
 
 
@@ -727,17 +901,33 @@ rsaga.grid.to.points.randomly = function(in.grid,
 }
 
 rsaga.grid.to.points = function(in.grids, out.shapefile, 
-    in.clip.polygons, exclude.nodata = TRUE, ...)
+    in.clip.polygons, exclude.nodata = TRUE,
+    type = "nodes", env = rsaga.env(), ...)
 {
     in.grids = default.file.extension(in.grids,".sgrd")
     in.grids = paste(in.grids, collapse = ";")
-    param = list(GRIDS = in.grids, POINTS = out.shapefile,
-                 NODATA = exclude.nodata)
+    type = match.arg.ext(type, numeric=TRUE, ignore.case=TRUE, base=0,
+        choices=c("nodes","cells"))
+    if (type == 1 & (env$version == "2.0.4" | env$version == "2.0.5")) {
+        type = 0
+        warning("type == 'cells' not supported by SAGA 2.0.4 and 2.0.5; using type = 'nodes'")
+    }
+    param = list(GRIDS = in.grids)
+    if (env$version == "2.0.4" | env$version == "2.0.5") {
+        param = c(param, POINTS = out.shapefile)
+    } else param = c(param, SHAPES = out.shapefile)
+    param = c(param, NODATA = exclude.nodata)
     if (!missing(in.clip.polygons))
         param = c(param, POLYGONS = in.clip.polygons)
+    if (!(env$version == "2.0.4" | env$version == "2.0.5"))
+        param = c(param, TYPE = type)
+    module = "Grid Values to Shapes"
+    if (!rsaga.module.exists("shapes_grid",module,env=env))
+    #if (env$version == "2.0.4" | env$version == "2.0.5")
+        module = "Grid Values to Points"
     rsaga.geoprocessor(lib = "shapes_grid", 
-        module = "Grid Values to Points", # was: = 3
-        param, ...)
+        module = module, # was: = 3
+        param, env = env, ...)
 }
 
 
@@ -747,12 +937,11 @@ rsaga.grid.to.points = function(in.grids, out.shapefile,
 # completing module execution
 rsaga.inverse.distance = function(in.shapefile, out.grid, field, 
         power = 1, maxdist = 100, nmax = 10,
-        target = rsaga.target(), saga.version = "2.0.4", ...)
+        target = rsaga.target(), env = rsaga.env(), ...)
 {
-    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
-            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
-            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
-            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+    if (env$version != "2.0.4")
+        stop("rsaga.inverse.distance currently only works under SAGA GIS 2.0.4\n",
+             "  because some of the arguments have changed")
 
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
@@ -765,7 +954,7 @@ rsaga.inverse.distance = function(in.shapefile, out.grid, field,
     if (field < 0)
         stop("'field' must be an integer >=0")
 
-    if (saga.version == "2.0.4") {
+    if (env$version == "2.0.4") {
         module = "Inverse Distance"
         param = list(
             GRID = out.grid,
@@ -775,7 +964,7 @@ rsaga.inverse.distance = function(in.shapefile, out.grid, field,
             RADIUS = maxdist,
             NPOINTS = nmax)
         param = c(param, target)        
-    } else if (saga.version == "2.0.5") {
+    } else {
         module = "Inverse Distance Weighted"
         param = list(
             GRID_GRID = out.grid,
@@ -788,26 +977,20 @@ rsaga.inverse.distance = function(in.shapefile, out.grid, field,
             RADIUS = maxdist,
             NPOINTS = nmax)
         param = c(param, target)        
-    } else {
-        stop("module name changed from SAGA GIS 2.0.4 to 2.0.5;\n",
-             "module number also changed in an earlier version; try saga.version='2.0.5'\n",
-             "if working with a newer version,\nor saga.version='2.0.4' if working\n",
-             "with an older one; sorry for the inconvenience")
     }
         
     rsaga.geoprocessor(lib = "grid_gridding", 
-        module = module, # = 1 (was =0 in earlier SAGA versions...)
-        param, ...)
+        module = module,
+        param = param, env = env, ...)
 }
 
 
 rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
-    target = rsaga.target(), ...)
+    target = rsaga.target(), env = rsaga.env(), ...)
 {
-    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
-            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
-            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
-            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+    if (env$version != "2.0.4")
+        stop("rsaga.nearest.neighbour currently only works under SAGA GIS 2.0.4\n",
+             "  because some of the arguments have changed")
 
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
@@ -826,12 +1009,11 @@ rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
 
 rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
     quadratic.neighbors = 13, weighting.neighbors = 19,
-    target = rsaga.target(), ...)
+    target = rsaga.target(), env = rsaga.env(), ...)
 {
-    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
-            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
-            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
-            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+    if (env$version != "2.0.4")
+        stop("rsaga.modified.quadratic.shephard currently only works under SAGA GIS 2.0.4\n",
+             "  because some of the arguments have changed")
 
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
@@ -856,12 +1038,11 @@ rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
 
 
 rsaga.triangulation = function(in.shapefile, out.grid, field,
-    target = rsaga.target(), ...)
+    target = rsaga.target(), env = rsaga.env(), ...)
 {
-    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
-            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
-            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
-            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+    if (env$version != "2.0.4")
+        stop("rsaga.triangulation currently only works under SAGA GIS 2.0.4\n",
+             "  because some of the arguments have changed")
 
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")
@@ -885,12 +1066,11 @@ rsaga.ordinary.kriging = function(in.shapefile, out.grid,
     nugget = 0, sill = 10, range = 100,
     log.transform = FALSE, maxdist = 1000, blocksize, 
     nmin = 4, nmax = 20,
-    target = rsaga.target(), ...)
+    target = rsaga.target(), env = rsaga.env(), ...)
 {
-    warning("'rsaga.target' as well as 'rsaga.inverse.distance' and the other interpolation\n",
-            "modules do not seem to work well with SAGA GIS 2.0.5; I tried to figure out\n",
-            "how the new SAGA CMD parameters for these commands work but I havent really understood\n",
-            "the changes. Try using the 'rsaga.geoprocessor' directly. Sorry for the inconvenience.")
+    if (env$version != "2.0.4")
+        stop("rsaga.ordinary.kriging currently only works under SAGA GIS 2.0.4\n",
+             "  because some of the arguments have changed")
 
     in.shapefile = default.file.extension(in.shapefile, ".shp")
     out.grid = default.file.extension(out.grid, ".sgrd")

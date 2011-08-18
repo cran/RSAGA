@@ -5,10 +5,10 @@
 \description{Perform Arithmetic Operations on Grids}
 \usage{
 rsaga.grid.calculus(in.grids, out.grid, formula, 
-        saga.version = "2.0.4", ...)
+        env = rsaga.env(), ...)
 rsaga.linear.combination(in.grids, out.grid, 
         coef, cf.digits = 16, remove.zeros = FALSE, 
-        remove.ones = TRUE, ...)
+        remove.ones = TRUE, env = rsaga.env(), ...)
 }
 \arguments{
   \item{in.grids}{input character vector: SAGA grid files
@@ -20,12 +20,6 @@ rsaga.linear.combination(in.grids, out.grid,
         operation to be performed on the \code{in.grids}
         (see Details); if this is a formula, only the right hand side
         will be used.}
-  \item{saga.version}{character string, either '2.0.4' (default) or '2.0.5';
-        the command line arguments for the grid calculator module 
-        changed from SAGA GIS 2.0.4 to 2.0.5, the function is now
-        able to handle both situations; if using a different SAGA GIS
-        version, try one of these two options, or look at \code{rsaga.get.usage}
-        and use \code{rsaga.geoprocessor} directly; sorry for the inconvenience }
   \item{coef}{numeric: coefficient vector to be used for the
         linear combination of the \code{in.grids}. If \code{coef}
         as one more element than \code{in.grids}, the first one
@@ -40,6 +34,12 @@ rsaga.linear.combination(in.grids, out.grid,
   \item{remove.ones}{logical: if \code{TRUE} (default), factors
         equal to 1 (after rounding to \code{cf.digits} digits)
         will be removed from the formula}
+  \item{env}{character string, either '2.0.4' (default) or '2.0.5';
+        the command line arguments for the grid calculator module 
+        changed from SAGA GIS 2.0.4 to 2.0.5, the function is now
+        able to handle both situations; if using a different SAGA GIS
+        version, try one of these two options, or look at \code{rsaga.get.usage}
+        and use \code{rsaga.geoprocessor} directly; sorry for the inconvenience }
   \item{\dots}{optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
         including the \code{env} RSAGA geoprocessing environment}
 }

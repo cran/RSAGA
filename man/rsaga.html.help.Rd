@@ -15,29 +15,19 @@ rsaga.html.help(lib, module, env = rsaga.env(), ...)
         to the main help page of the SAGA library \code{lib}}
   \item{env}{list, setting up a SAGA geoprocessing environment
         as created by \code{\link{rsaga.env}}}
-  \item{\dots}{additional arguments to be passed to \code{\link{browseURL}}}
+  \item{\dots}{additional arguments}
 }
 \details{Doesn't seem to work with SAGA GIS 2.0.2+, needs to be updated, sorry.
 Please use \code{\link{rsaga.get.usage}} or \code{\link{rsaga.search.modules}}
-or \code{\link{rsaga.get.modules}} instead.
-
-Deprecated details on this function:
-This help is not always available,
-    there are some mismatches between libraries and their HTML files,
-    and the HTML files are designed for use with SAGA GUI, not with
-    the command line version. Some HTML help pages are also linked to
-    the wrong module; in this case the SAGA library's help page may
-    provide a link to the module's help page.
-    
-    In many cases \code{\link{rsaga.get.usage}} will provide more reliable
-    information.}
+or \code{\link{rsaga.get.modules}} instead. This function is currently only
+kept as a place holder for future referencing of SAGA GIS Wiki pages
+that are currently under development.}
 % \value{ }
 % \references{ }
 \author{Alexander Brenning}
 % \note{}
 \seealso{\code{\link{rsaga.get.usage}}, \code{\link{rsaga.geoprocessor}},
-    \code{\link{rsaga.env}}, \code{\link{browseURL}} }
-\examples{
-\dontrun{rsaga.html.help(rsaga.parallel.processing)}}
+    \code{\link{rsaga.env}} }
+% \examples{}
 \keyword{utilities}
 \keyword{interface}

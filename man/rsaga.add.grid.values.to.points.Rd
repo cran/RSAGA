@@ -2,8 +2,7 @@
 \alias{rsaga.add.grid.values.to.points}
 \title{Add Grid Values to Point Shapefile}
 \description{Pick values from SAGA grids and attach
-them as a new variables to a point shapefile.
-THIS SAGA MODULE CURRENTLY SEEMS TO CRASH SAGA (but not R).}
+them as a new variables to a point shapefile.}
 \usage{
 rsaga.add.grid.values.to.points(in.shapefile, in.grids, out.shapefile, 
     method = c("nearest.neighbour", "bilinear",
@@ -27,7 +26,8 @@ positions of the points of the selected points layer and adds
 it to the resulting layer.}
 %\references{}
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA modules)}
-\note{This function uses module 0 in SAGA library \code{shapes_grid}.}
+\note{This function uses module \code{Add Grid Values to Points} 
+(code: 0) in SAGA library \code{shapes_grid}.}
 \seealso{\code{\link{pick.from.points}}, \code{\link{pick.from.ascii.grid}},
 \code{\link{pick.from.saga.grid}}, \code{\link{rsaga.grid.to.points}}}
 %\examples{\dontrun{}}

@@ -1169,12 +1169,7 @@ multi.focal.function = function(
 grid.predict = function(fit, predfun, trafo, control.predict,
     predict.column, trace = 0, location, ...) 
 {
-    if (missing(fit)) stop("Error in 'grid.predict':\n",
-        "If called from within 'multi.focal.function' or\n",
-        "'focal.function': 'grid.predict' is unable to determine\n",
-        "names of response variable(s); use the 'out.varname[s]'",
-        "argument of '[multi.]focal.function' to specify response\n",
-        "variable and file name.\n")
+    if (missing(fit)) stop("'fit' object required\n")
 
     if (trace >= 2 & !missing(location))
         print(str(location))
@@ -1187,6 +1182,7 @@ grid.predict = function(fit, predfun, trafo, control.predict,
         newdata = cbind(newdata, location)
     }
     
+    # Apply transformation function to predictor data.frame:
     if (!missing(trafo))
         newdata = trafo(newdata)
 
@@ -1209,3 +1205,169 @@ grid.predict = function(fit, predfun, trafo, control.predict,
     
     return(pred)
 }
+
+
+
+
+multi.local.function = function( 
+    in.grids, in.grid.prefix,
+    out.grid.prefix,
+    path = NULL, in.path = path, out.path = path,
+    fun, in.varnames, out.varnames,
+    na.strings = "NA",
+    valid.ranges, nodata.values = c(), out.nodata.value, 
+    digits = 4, dec = ".", quiet = TRUE, nlines = Inf,
+    na.action = na.exclude, pass.location = FALSE, 
+    ... )
+{
+    # build input filenames:
+    if (missing(in.grid.prefix)) in.grid.prefix = ""
+    if (is.null(in.grid.prefix)) in.grid.prefix = ""
+    if (missing(in.varnames)) {
+        in.varnames = in.grids
+    } else if (missing(in.grids)) {
+        in.grids = in.varnames
+    }
+    stopifnot(length(in.varnames) == length(unique(in.varnames)))
+    stopifnot(length(in.grids) == length(unique(in.grids)))
+    stopifnot(length(in.varnames) == length(in.grids))
+    do.paste.in = (in.varnames!="") & (in.grid.prefix!="")
+    in.filenames = paste( in.grid.prefix, c("","_")[do.paste.in+1], in.grids, sep="" )
+    in.filenames = default.file.extension(in.filenames,".asc")
+    if (!is.null(in.path)) if (any(in.path != ""))
+        in.filenames = file.path(in.path, in.filenames)
+
+    # prepare input files:
+    N.in = length(in.filenames)
+    in.files = in.hdrs = nodata.vals = as.list(1:N.in)
+    for (k in 1:N.in) {
+        in.files[[k]] = file(in.filenames[k],open="r")
+        in.hdrs[[k]] = read.ascii.grid.header(in.files[[k]],dec=dec)
+        nodata.vals[[k]] = unique(c(nodata.values,in.hdrs[[k]]$nodata_value))
+        if (k > 1) {
+            if ( in.hdrs[[k]]$cellsize != in.hdrs[[1]]$cellsize |
+                  in.hdrs[[k]]$ncols != in.hdrs[[1]]$ncols |
+                  in.hdrs[[k]]$nrows != in.hdrs[[1]]$nrows )
+                stop("incompatible input grids")
+        }
+    }
+    on.exit( for (k in 1:N.in) close(in.files[[k]]), add = TRUE )
+    in.hdr = in.hdrs[[1]]
+    nlines = max( 1, min( c(nlines, in.hdr$nrows), na.rm = TRUE ) )
+
+    # build output filenames:
+    if (missing(out.varnames)) {
+        # check if the function will return a vector with variable names
+        # when called without arguments:
+        out.varnames = try(do.call(fun,list()), silent = TRUE)
+        if (missing(out.varnames) || class(out.varnames) == "try-error") {
+            if (is.character(fun)) {
+                out.varnames = gsub(".","",fun,fixed=TRUE)
+            } else if (is.function(fun)) {
+                out.varnames = deparse(substitute(fun))
+            } else stop("unable to determine 'out.varnames' from 'fun'")
+            out.varnames = abbreviate(out.varnames,6)
+        }
+    }
+    if (missing(out.grid.prefix)) out.grid.prefix = ""
+    if (is.null(out.grid.prefix)) out.grid.prefix = ""
+    stopifnot(length(out.varnames) == length(unique(out.varnames)))
+    do.paste = (out.varnames!="") & (out.grid.prefix!="")
+    out.filenames = paste( out.grid.prefix, c("","_")[do.paste+1], 
+                    out.varnames, sep="" )
+    out.filenames = default.file.extension(out.filenames,".asc")
+    if (!is.null(out.path)) if (out.path!="")
+        out.filenames = file.path(out.path,out.filenames)
+    if (any(out.filenames %in% in.filenames))
+        stop("one of the output file names is equal to an input file name")
+
+    # prepare output files:
+    N.out = length(out.filenames)
+    out.files = as.list(1:N.out)
+    out.hdr = in.hdr
+    if (missing(out.nodata.value)) out.nodata.value = in.hdr$nodata_value
+    out.hdr$nodata_value = out.nodata.value
+    for (k in 1:N.out) {
+        out.files[[k]] = file(out.filenames[k],open="w")
+        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec)
+    }
+    on.exit( for (k in 1:N.out) close(out.files[[k]]), add=TRUE )
+    
+    if (missing(valid.ranges)) {
+        valid.ranges = list()
+        for (k in 1:N.in) valid.ranges[[k]] = c(-Inf, Inf)
+    }
+
+    fmt = paste("%.",digits,"f",sep="")
+    loc = NULL
+
+    # Apply 'fun' as a local function:
+    
+        # Process one line at a time:
+        for (i in 1:nlines) {
+            if (!quiet) if ((i %% 10)==0) cat("*")
+            if (!quiet) if ((i %% 100)==0) cat("\n")
+            
+            y.coord = in.hdr$yllcenter + (in.hdr$nrows - i) * in.hdr$cellsize
+            
+            # Read one line at a time, file by file:
+            vl0 = as.list(1:N.in)
+            for (k in 1:N.in) {
+                vl0[[k]] = scan(in.files[[k]], nlines = 1, quiet = TRUE, 
+                    dec = dec, na.strings = na.strings)
+                if (length(vl0[[k]]) != in.hdr$ncols) {
+                    warning("grid line does not have NCOLS values")
+                    vl0[[k]] = c( vl0[[k]], 
+                            rep(NA, in.hdr$ncols - length(vl0[[k]])) )
+                }
+                for (na in nodata.vals[[k]]) 
+                    vl0[[k]][ vl0[[k]] == na ] = NA
+                vl0[[k]][ vl0[[k]] < valid.ranges[[k]][1] ] = NA
+                vl0[[k]][ vl0[[k]] > valid.ranges[[k]][2] ] = NA
+            }
+                            
+            # Pass the (x,y) coordinates to the function?
+            if (pass.location) {
+                x.coord = c(0:(in.hdr$ncol-1)) * in.hdr$cellsize + in.hdr$xllcenter
+                loc = list( location = data.frame(x = x.coord, y = y.coord) )
+            }
+              
+            # Transfer data into argument list:
+            args = as.list(1:N.in)
+            for (k in 1:N.in) args[[k]] = vl0[[k]]
+            ### can this be avoided: args <- vl0 ???
+            
+            # Remove missing data:               
+            args0 = na.action( as.data.frame(args) )
+            names(args0) = in.varnames
+            unsel = attr(args0, "na.action")
+                
+            # Any data left?
+            if (nrow(args0) > 0) {
+                args0 = c( as.list(args0), loc, alist(...) )
+                if (is.null(unsel)) {
+                    # No NA's:
+                    res = matrix(do.call(fun, args0), ncol = in.hdr$ncols, nrow = N.out)
+                } else {
+                    # NA's were present --> have to re-assign results to non-NA grid cells:
+                    res = matrix(NA, ncol = in.hdr$ncols, nrow = N.out)
+                    res[,-unsel] = do.call(fun, args0)
+                }
+            } else res = matrix(NA, ncol = in.hdr$ncols, nrow = N.out)
+
+            # fill in nodata_values:
+            res[ is.na(res) ] = out.nodata.value
+            for (k in 1:N.out) {
+                # convert to character string and write to file:
+                txt = paste( sprintf(fmt, res[k,]), collapse = " " )
+                if (dec != ".") txt = gsub(".", dec, txt, fixed = TRUE)
+                writeLines(txt,con = out.files[[k]])
+            }
+            rm(res)
+        }
+        
+    if (!quiet)  cat("\nDone.\n")
+
+    return(out.filenames)
+}
+
