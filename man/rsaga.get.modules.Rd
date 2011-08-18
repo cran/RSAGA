@@ -3,6 +3,7 @@
 \alias{rsaga.get.lib.modules}
 \alias{rsaga.get.modules}
 \alias{rsaga.search.modules}
+\alias{rsaga.module.exists}
 \title{Find SAGA libraries and modules}
 \description{These functions list the SAGA libraries
 (\code{rsaga.get.libraries}) and modules (\code{rsaga.get.lib.modules},
@@ -17,6 +18,7 @@ rsaga.get.modules(libs, env = rsaga.env(), ...)
 rsaga.search.modules(text, modules, search.libs = TRUE,
     search.modules = TRUE, env = rsaga.env(), 
     ignore.case = TRUE, ...)
+rsaga.module.exists(libs, module, env = rsaga.env(), ...)
 }
 \arguments{
   \item{text}{character string to be searched for in the names
@@ -31,6 +33,7 @@ rsaga.search.modules(text, modules, search.libs = TRUE,
         string (\code{lib}) with the name(s) of library/ies in
         which to look for modules; if \code{libs} is missing,
         all libraries will be processed}
+  \item{module}{module name or numeric code}
   \item{modules}{optional list:
         result of \code{rsaga.get.modules}; if missing,
         a list of available modules will be retrieved using

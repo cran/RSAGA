@@ -10,7 +10,8 @@ rsaga.ordinary.kriging(in.shapefile, out.grid,
     model = c("spherical", "exponential", "gaussian"),
     nugget = 0, sill = 10, range = 100,
     log.transform = FALSE, maxdist = 1000, blocksize, 
-    nmin = 4, nmax = 20, target = rsaga.target(), ...)
+    nmin = 4, nmax = 20, target = rsaga.target(), 
+    env = rsaga.env(), ...)
 }
 \arguments{
   \item{in.shapefile}{Input: point shapefile
@@ -41,8 +42,9 @@ rsaga.ordinary.kriging(in.shapefile, out.grid,
   \item{target}{list: parameters identifying the target area,
         e.g. the lower left corner and size of grid, or name of a
         reference grid; see \code{\link{rsaga.target}}.}
-  \item{\dots}{Optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
-        including the \code{env} RSAGA geoprocessing environment.}
+  \item{env}{RSAGA geoprocessing environment created by \code{\link{rsaga.env}},
+        required because module(s) depend(s) on SAGA version }
+  \item{\dots}{Optional arguments to be passed to \code{\link{rsaga.geoprocessor}}.}
 }
 %\details{}
 %\references{  }

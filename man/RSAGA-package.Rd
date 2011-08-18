@@ -8,8 +8,8 @@
 \tabular{ll}{
 Package: \tab RSAGA\cr
 Type: \tab Package\cr
-Version: \tab 0.91-1\cr
-Date: \tab 2010-08-25\cr
+Version: \tab 0.92-1\cr
+Date: \tab 2011-08-18\cr
 License: \tab GPL-2\cr
 }
 RSAGA provides direct access to SAGA functions including a comprehensive set
@@ -29,17 +29,21 @@ variables.  Furthermore, functions are provided for conveniently picking
 values at point locations from a grid using kriging or nearest neighbour 
 interpolation.
 
-RSAGA requires the free SAGA GIS (>=2.0.2) and its user-contributed
-modules to be available on your computer.  These can be downloaded under
-GPL from
+RSAGA requires the free SAGA GIS (versions 2.0.4 - 2.0.7 are currently 
+supported) and its user-contributed modules to be available on your computer.
+These can be downloaded under GPL from
 \url{http://sourceforge.net/projects/saga-gis/}.  Please check 
 \code{\link{rsaga.env}} to make sure that RSAGA can find your 
-local installation of SAGA. Also note that SAGA GIS 2.0.5 does not seem
-to work well with the interface functions for interpolation methods (but
-SAGA GIS 2.0.4 does).
+local installation of SAGA. RSAGA has been tested with SAGA GIS
+versions 2.0.4 to 2.0.7; however, interface functions for interpolation
+methods currently do not work with SAGA GIS 2.0.5+; either use SAGA GIS 2.0.4
+instead, or call interpolation modules directly using the (lower level)
+rsaga.geoprocessor function.
 
 Thanks to Olaf Conrad, Andre Ringeler and all the other SAGA
 developers and contributors providing this excellent geocomputing tool!
+Thanks to Rainer Hurling, Johan van de Wauw and others for helping to adapt SAGA to 
+and test on unix platforms.
 }
 \author{Alexander Brenning <brenning@uwaterloo.ca>}
 % \references{ }

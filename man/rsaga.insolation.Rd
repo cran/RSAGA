@@ -3,7 +3,8 @@
 \title{Incoming Solar Radiation (Insolation)}
 \description{This function calculates the amount of incoming
 solar radiation (insolation) depending on slope, aspect,
-and atmospheric properties.}
+and atmospheric properties. Module not available in SAGA GIS
+2.0.6 and 2.0.7.}
 \usage{
 rsaga.insolation(in.dem, in.vapour, in.latitude, in.longitude, 
     out.direct, out.diffuse, out.total, horizontal = FALSE, 
@@ -77,8 +78,11 @@ it is a numerical error code (0: success), or otherwise (default)
 a character vector with the module's console output.}
 % \references{ }
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
-\note{This function uses module 3 from SAGA library \code{ta_lighting}.}
-\seealso{\code{\link{rsaga.solar.radiation}}, \code{\link{rsaga.hillshade}}}
+\note{This function uses module \code{Insolation} (code: 3) from SAGA library
+\code{ta_lighting}. It is availble in SAGA GIS 2.0.4 and 2.0.5 but not 2.0.6
+and 2.0.7; see \code{\link{rsaga.pisr}}.}
+\seealso{\code{\link{rsaga.solar.radiation}}, \code{\link{rsaga.pisr}}, 
+    \code{\link{rsaga.hillshade}}}
 % \examples{}
 \keyword{spatial}
 \keyword{interface}

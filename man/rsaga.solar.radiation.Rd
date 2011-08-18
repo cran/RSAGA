@@ -3,14 +3,15 @@
 \title{Potential incoming solar radiation}
 \description{This function calculates the potential incoming solar radiation
     in an area either using a lumped atmospheric transmittance model
-    or estimating it based on water and dust content.}
+    or estimating it based on water and dust content. Use \code{\link{rsaga.pisr}}
+    instead with SAGA GIS 2.0.6+.}
 \usage{
 rsaga.solar.radiation(in.dem, out.grid, out.duration, latitude, 
     unit = c("kWh/m2", "J/m2"), solconst = 1367, 
     method = c("lumped", "components"), transmittance = 70, 
     pressure = 1013, water.content = 1.68, dust = 100, 
     time.range = c(0, 24), time.step = 1, days = list(day = 21, month = 3), 
-    day.step = 5, ...)
+    day.step = 5, env = rsaga.env(), ...)
 }
 \arguments{
   \item{in.dem}{name of input digital elevation model (DEM) grid in
@@ -45,8 +46,9 @@ rsaga.solar.radiation(in.dem, out.grid, out.duration, latitude,
   \item{day.step}{if \code{days} indicates a range of days, this
         specifies the time step (number of days) for calculating
         the incoming solar radiation}
-  \item{\dots}{optional arguments to be passed to \code{\link{rsaga.geoprocessor}},
-        including the \code{env} RSAGA geoprocessing environment}
+  \item{env}{RSAGA geoprocessing environment obtained with \code{\link{rsaga.env}};
+        this argument is required for version control (see Note)}
+  \item{\dots}{optional arguments to be passed to \code{\link{rsaga.geoprocessor}} }
 }
 % \details{}
 % \value{ }
@@ -54,7 +56,11 @@ rsaga.solar.radiation(in.dem, out.grid, out.duration, latitude,
 Terrain analysis - principles and applications. New York, 
 John Wiley & Sons.}
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
-\note{SAGA uses zero-based days and months, but this R function uses the
+\note{This module ceased to exist under SAGA GIS 2.0.6+, which has
+a similar (but more flexible) module Potential Solar Radiation that
+is interfaced by \code{\link{rsaga.pisr}}.
+
+SAGA_CMD uses zero-based days and months, but this R function uses the
 standard one-based days and months (e.g. day 1 is the first day of the
 month, month 1 is January) and translates to the SAGA system.
 
@@ -69,14 +75,14 @@ The solar radiation module of SAGA 2.0.1 had a bug that made it impossible
 to pass a range of \code{days} of the year or a range of hours of the day 
 (\code{time.range}) to SAGA. These options work in SAGA 2.0.1.
 
-This function uses module 2 from SAGA library \code{ta_lighting}.}
+This function uses module Incoming Solar Radiation (code: 2) from SAGA 
+library \code{ta_lighting}. }
 \seealso{\code{\link{rsaga.hillshade}}, \code{\link{rsaga.insolation}}}
 \examples{
 \dontrun{
 # potential solar radiation on Nov 7 in Southern Ontario...
 rsaga.solar.radiation("dem","solrad","soldur",latitude=43,
     days=list(day=7,month=11),time.step=0.5)
-# ...in fact a cold, cloudy, windy day...
 }
 }
 \keyword{spatial}

@@ -133,7 +133,7 @@ terrain attributes compared to for example the SAGA modules, but the idea
 is that you can easily specify your own functions without starting to
 mess around with C code. For example try implementing a median filter
 as a SAGA module... or just use the code shown in the example!}
-\seealso{\code{\link{multi.focal.function}},
+\seealso{\code{\link{multi.focal.function}}, \code{\link{multi.local.function}},
 \code{\link{resid.median}}, \code{\link{resid.minmedmax}},
 \code{\link{relative.position}}, \code{\link{resid.quantile}},
 \code{\link{resid.quartiles}}, \code{\link{relative.rank}}, 

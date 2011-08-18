@@ -4,7 +4,7 @@
 \description{This function can be used to apply the predict method
 of hopefully any fitted predictive model pixel by pixel to a stack of grids 
 representing the explanatory variables. It is intended to be called
-primarily by \code{\link{multi.focal.function}}.}
+primarily by \code{\link{multi.local.function}} or \code{\link{multi.focal.function}}.}
 \usage{
 grid.predict(fit, predfun, trafo, control.predict,
     predict.column, trace = 0, location, ...)}
@@ -33,13 +33,14 @@ grid.predict(fit, predfun, trafo, control.predict,
   \item{location}{optional location data received from \code{multi.focal.function};
         is added to the \code{newdata} object that is passed on to \code{predfun}.}
   \item{\dots}{these arguments are provided by the calling function, usually
-        \code{\link{multi.focal.function}}. They contain the explanatory 
+        \code{\link{multi.local.function}} or \code{\link{multi.focal.function}}. 
+        They contain the explanatory 
         (predictor) variables required by the \code{fit} model.}
 }
 \details{\code{grid.predict} is a simple wrapper function. First it binds
 the arguments in \code{\dots} together in a \code{data.frame} with the
 raw predictor variables that have been read from their grids by
-the caller, \code{\link{multi.focal.function}}.
+the caller, \code{\link{multi.local.function}} (or \code{\link{multi.focal.function}}).
 Then it calls the optional \code{trafo} function to transform or combine
 predictor variables (e.g. perform log transformations, ratioing, arithmetic
 operations such as calculating the NDVI).
@@ -58,11 +59,12 @@ In: J. Boehner, T. Blaschke, L. Montanarella (eds.), SAGA - Seconds Out
 \author{Alexander Brenning}
 \note{Though \code{grid.predict} can in principle deal with \code{predict}
 methods returning factor variables, its usual caller
-\code{\link{multi.focal.function}} cannot; classification models should be
+\code{\link{multi.local.function}} / \code{\link{multi.focal.function}} 
+cannot; classification models should be
 dealt with by setting a \code{type="prob"} (for \code{rpart}) or
 \code{type="response"} (for logistic regression and logistic additive model)
 argument, for example (see second Example below).}
-\seealso{\code{\link{focal.function}}, \code{\link{grid.predict}}}
+\seealso{\code{\link{focal.function}}, \code{\link{multi.local.function}}, \code{\link{multi.focal.function}}}
 \examples{
 \dontrun{
 # Assume that d is a data.frame with point observations
@@ -72,7 +74,7 @@ argument, for example (see second Example below).}
 # We want to model b and c as nonlinear terms:
 require(gam)
 fit <- gam(y ~ a + s(b) + s(c), data = d)
-multi.focal.function(in.grids = c("a", "b", "c"),
+multi.local.function(in.grids = c("a", "b", "c"),
     out.varnames = "pred",
     fun = grid.predict, fit = fit )
     # Note that the 'grid.predict' uses by default the
@@ -84,7 +86,7 @@ multi.focal.function(in.grids = c("a", "b", "c"),
 # A fake example of a logistic additive model:
 require(gam)
 fit <- gam(cl ~ a + s(b) + s(c), data = d, family = binomial)
-multi.focal.function(in.grids = c("a", "b", "c"),
+multi.local.function(in.grids = c("a", "b", "c"),
     out.varnames = "pred",
     fun = grid.predict, fit = fit,
     control.predict = list(type = "response") )

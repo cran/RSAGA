@@ -29,7 +29,12 @@ a character vector with the module's console output.}
 %\references{  }
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
 \note{This function uses modules 7 (\code{rsaga.close.gaps} and 6
-\code{rsaga.close.one.cell.gaps} from the SAGA library \code{grid_tools}.}
+\code{rsaga.close.one.cell.gaps} from the SAGA library \code{grid_tools}.
+
+SAGA GIS 2.0.5+ has a new additional module \code{Close Gaps with Spline},
+which can be accessed using \code{\link{rsaga.geoprocessor}} (currently
+no R wrapper available). See
+\code{rsaga.get.usage("grid_tools","Close Gaps with Spline")}.}
 \seealso{\code{\link{rsaga.geoprocessor}}, \code{\link{rsaga.env}}}
 \examples{
 \dontrun{

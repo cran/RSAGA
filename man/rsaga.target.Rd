@@ -61,7 +61,8 @@ rsaga.target(target = c("user.defined", "grid.system",
 \author{Alexander Brenning}
 \note{This function is to be used with RSAGA functions
 \code{\link{rsaga.ordinary.kriging}}, \code{\link{rsaga.inverse.distance}},
-\code{\link{rsaga.nearest.neighbour}} and \code{\link{rsaga.modified.quadratic.shephard}}.
+\code{\link{rsaga.nearest.neighbour}} and \code{\link{rsaga.modified.quadratic.shephard}}
+Note that these are currently only compatible with SAGA GIS 2.0.4.
 }
 \seealso{\code{\link{read.ascii.grid.header}}}
 \examples{\dontrun{

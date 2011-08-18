@@ -10,7 +10,8 @@
 (i.e. slope, aspect and curvatures).}
 \usage{
 rsaga.local.morphometry(in.dem, out.slope, out.aspect, out.curv, 
-    out.hcurv, out.vcurv, method = "poly2zevenbergen", ...)
+    out.hcurv, out.vcurv, method = "poly2zevenbergen",
+    env = rsaga.env(), ...)
 rsaga.slope(in.dem, out.slope, method = "poly2zevenbergen", ...)
 rsaga.aspect(in.dem, out.aspect, method = "poly2zevenbergen", ...)
 rsaga.curvature(in.dem, out.curv, method = "poly2zevenbergen", ...)
@@ -34,6 +35,8 @@ rsaga.profile.curvature(in.dem, out.vcurv, method = "poly2zevenbergen", ...)
         Fit 2nd Degree Polynomial - Heerdegen and Beran (1982) (\code{"poly2heerdegen"}, or 4),
         default: Fit 2nd Degree Polynomial - Zevenbergen and Thorne (1987) (\code{"poly2zevenbergen"}, or 5),
         Fit 3rd Degree Polynomial - Haralick (1983) (\code{"poly3haralick"}, or 6).}
+  \item{env}{list, setting up a SAGA geoprocessing environment
+        as created by \code{\link{rsaga.env}}}
   \item{\dots}{further arguments to \code{\link{rsaga.geoprocessor}}}
 }
 % \details{ }
@@ -41,7 +44,16 @@ rsaga.profile.curvature(in.dem, out.vcurv, method = "poly2zevenbergen", ...)
 passed to the \code{\link{rsaga.geoprocessor}}. For \code{intern=FALSE}
 it is a numerical error code (0: success), or otherwise (default)
 a character vector with the module's console output.}
-\references{Maximum Slope:
+\references{General references:
+
+Jones KH (1998) A comparison of algorithms used to compute hill slope as
+a property of the DEM. Computers and Geosciences. 24 (4): 315-323.
+
+
+
+References on specific methods:
+
+Maximum Slope:
 Travis, M.R., Elsner, G.H., Iverson, W.D., Johnson, C.G. (1975):
 VIEWIT: computation of seen areas, slope, and aspect for land-use planning.
 USDA F.S. Gen. Tech. Rep. PSW-11/1975, 70 p. Berkeley, California, U.S.A.
@@ -78,6 +90,14 @@ surface topography. Earth Surface Processes and Landforms, 12: 47-56.
 Fit 3.Degree Polynom
 Haralick, R.M. (1983): Ridge and valley detection on digital images.
 Computer Vision, Graphics and Image Processing, 22(1): 28-38.
+
+
+
+For a discussion on the calculation of slope by ArcGIS check these links:
+
+\url{http://forums.esri.com/Thread.asp?c=93&f=1734&t=239914}
+
+\url{http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?topicname=how_slope_works}
 }
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
 \note{This function uses module 0 from the SAGA library \code{ta_morphometry}.}

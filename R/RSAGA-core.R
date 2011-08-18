@@ -1,12 +1,15 @@
 
 rsaga.env = function( workspace=".", 
     cmd = ifelse(.Platform$OS.type=="windows", "saga_cmd.exe", "saga_cmd"), 
-    path, modules,
+    path, modules, version,
     check.libpath = TRUE, 
     check.SAGA = TRUE, 
     check.PATH = .Platform$OS.type == "windows",
     check.os.default = TRUE,
-    os.default.path = ifelse(.Platform$OS.type=="windows", "C:/Progra~1/SAGA-GIS", "/usr/local/bin") )
+    os.default.path = ifelse(.Platform$OS.type=="windows",
+        "C:/Progra~1/SAGA-GIS",
+        sub('/saga_cmd','',system2('which',args='saga_cmd',stdout=TRUE))) )
+    #ifelse(.Platform$OS.type=="windows", "C:/Progra~1/SAGA-GIS", "/usr/local/bin") )
 {
     rsaga.get.possible.SAGA.paths = function( check.libpath, check.SAGA,
             check.PATH, check.os.default, os.default.path )
@@ -16,6 +19,7 @@ rsaga.env = function( workspace=".",
             path.pckg = file.path( .libPaths(), "RSAGA" )
             try( path.pckg <- .path.package("RSAGA"), silent = TRUE )
             path = c( path, file.path( path.pckg, "saga_vc" ) )
+            path = c( path, file.path( path.pckg, "SAGA-GIS" ) )
         }
         if (check.SAGA)
             path = c( path, Sys.getenv("SAGA"), getwd() )
@@ -72,16 +76,17 @@ rsaga.env = function( workspace=".",
 
     if (workspace == "") workspace = "."
 
+    # If path specified by user, check if valid:
     if (missing(path)) {
         path = NULL
-    } else {
-        if (!file.exists(file.path(path,cmd))) {
-            warning("SAGA command line program ", cmd, " not found in the specified path ", 
-                path, ".", "\nTrying to find it somewhere else.")
-            path = NULL
-        }
+    } else if (!file.exists(file.path(path,cmd))) {
+        warning("SAGA command line program ", cmd, " not found in the specified path ", 
+            path, ".", "\nTrying to find it somewhere else.")
+        path = NULL
     }
+    # No path information available, start search...
     if (is.null(path)) {
+        # Ordered list of candidate paths:
         path = rsaga.get.possible.SAGA.paths( check.libpath, check.SAGA,
                                     check.PATH, check.os.default,
                                     os.default.path = os.default.path )
@@ -90,6 +95,7 @@ rsaga.env = function( workspace=".",
                 "\nTrying to find it in the current working directory...")
             path = getwd()
         }
+        # Determine first candidate folder that contains saga_cmd executable:
         the.path = NULL
         for (pa in path) {
             if (file.exists(file.path(pa,cmd))) {
@@ -97,6 +103,7 @@ rsaga.env = function( workspace=".",
                 break
             }
         }
+        # None found:
         if (is.null(the.path)) {
             warning("SAGA command line program '", cmd, 
                     "' not found in any of the paths\n", paste(path,collapse="\n"))
@@ -105,30 +112,83 @@ rsaga.env = function( workspace=".",
         path = the.path
     }    
 
+    # Set up module path:
     if (missing(modules)) {
         modules = file.path(path,"modules")
-        if ( .Platform$OS.type == "unix") 
-            modules = "/usr/local/lib/saga"
-    } else {
+        if ( .Platform$OS.type == "unix") { 
+            if ( nchar(Sys.getenv("SAGA_MLB"))[[1]] > 0 ) { # MLB exist + data is there
+                modules = Sys.getenv("SAGA_MLB")[[1]]
+            } else {
+                # have a backup path in case SAGA_MLB is not set/empty
+                if (substr(path, nchar(path)-3, nchar(path)) == paste(.Platform$file.sep, "bin", sep="")) {
+                    modules = file.path( substr(path, 1, nchar(path)-4), "lib", "saga" )
+                } else modules = "usr/local/lib/saga"
+            }
+        }
+		} else {
+		    # Empty character string interpreted as ".",
+        # i.e. current working directory:
         if (modules == "") modules = getwd()
     }
+    
+    # Check if folder with the specified names exist:
     if (!file.exists(workspace))
         warning("Invalid workspace path ", workspace)
     if (!file.exists(path))
         warning("Invalid SAGA path ", path)
-    #if (!file.exists(file.path(path,cmd)))
-    #    warning("SAGA command line program ", file.path(path,cmd), " not found.")
     if (!file.exists(modules))
         warning("Invalid SAGA modules path ", modules)
-    return( list(
+
+    ## Check if saga_cmd[.exe] exists in specified folder:
+    ## (no need to do this - this was done above)
+    #if (!file.exists(file.path(path,cmd)))
+    #    warning("SAGA GIS command line program not found.\nFile name: ", file.path(path,cmd))
+
+    # Set up RSAGA geoprocessing environment:
+    env = list(
         workspace = workspace,
         cmd = cmd,
         path = path,
-        modules = modules ))
+        modules = modules,
+        version = NA )
+        
+    # Determine SAGA API version, if not specified by caller:
+    if (missing(version))
+        version = rsaga.get.version(env = env)
+    env$version = version
+        
+    return( env )
+}
+
+rsaga.get.version = function(env = rsaga.env(version=NA), ...) {
+    #### check if this function works on unix????
+    # Retrieve basic help page of saga_cmd:
+    out = rsaga.geoprocessor(lib = NULL, prefix = "-h", show.output.on.console = FALSE, 
+        warn = -1, env = env, ...)
+        
+    # Process the help page line by line in order to find lines starting
+    # with "SAGA API " (or "SAGA CMD ", if no "SAGA API " line available)
+    version = NA
+    for (i in 1:length(out)) {
+        if (substr(out[i],1,9) == "SAGA API ") {
+            if (as.numeric(substr(out[i],10,10)) > 0) {
+                version = gsub(" ", "", substr(out[i],10,nchar(out[i])), fixed = TRUE)
+                break
+            }
+        } else if (substr(out[i],1,9) == "SAGA CMD ") {
+            if ( is.na(version) & any( as.character(0:9) == substr(out[i],10,10) ) ) {
+                version = gsub(" ", "", substr(out[i],10,nchar(out[i])), fixed = TRUE)
+                # no 'break' because we're still hoping to find info on SAGA API version
+                # SAGA 2.0.4 only shows SAGA CMD version = 2.0.4, however newer versions
+                # distinguish between SAGA API and SAGA CMD versions.
+            }
+        }
+    }
+    return(version)
 }
 
 
-rsaga.get.libraries = function(path=rsaga.env()$modules, dll=.Platform$dynlib.ext)
+rsaga.get.libraries = function(path = rsaga.env()$modules, dll=.Platform$dynlib.ext)
 {
     dllnames = dir(path,paste("^.*\\",dll,"$",sep=""))
     if (.Platform$OS.type == "unix")
@@ -141,17 +201,18 @@ rsaga.get.lib.modules = function(lib, env=rsaga.env(), interactive=FALSE)
 {
     res = NULL
     
-    if (lib == "opencv") {
-        warning("module 'opencv' in SAGA GIS 2.0.5 produces error\nwhen attempting to request its module listing --> please try again in next version ;-)")
+    if (lib == "opencv" & (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")) {
+        warning("skipping library 'opencv' because it produces an error\n",
+            "  when requesting its module listing in SAGA version 2.0.4 - 2.0.6)")
         # return an empty data.frame of the same format as in the successful situation:
         return( data.frame( code = numeric(), name = character(), interactive = logical() ) )
     }
 
     rawres = rsaga.geoprocessor(lib, module=NULL, env=env,
         intern=TRUE, show.output.on.console=FALSE, invisible=TRUE,
-        reduce.intern=FALSE)
+        reduce.intern=FALSE, check.module.exists=FALSE, warn = -1)
 
-    wh = which( gsub(" ","",tolower(rawres)) == "availablemodules:" )
+    wh = which( gsub(" ","",tolower(rawres)) %in% c("availablemodules:","executablemodules:") )
 
     if (length(wh) > 0) {
         rawres = rawres[ (wh[length(wh)]+1) : length(rawres) ]
@@ -196,6 +257,19 @@ rsaga.get.modules = function(libs, env=rsaga.env(),...) {
     return(res)
 }
 
+rsaga.module.exists = function(libs, module, env = rsaga.env(), ...) {
+    if (missing(libs)) libs = rsaga.get.libraries(env$modules)
+    wh = "name"
+    if (is.numeric(module)) wh = "code"
+    for (i in 1:length(libs)) {
+        modules = rsaga.get.lib.modules(libs[i], env = env, ...)
+        if (!is.null(modules))
+            if (any(modules[,wh] == module))
+                return(TRUE)
+    }
+    return(FALSE)
+}
+
 
 rsaga.get.usage = function(lib, module, env=rsaga.env(), show=TRUE)
 {
@@ -235,8 +309,11 @@ rsaga.get.usage = function(lib, module, env=rsaga.env(), show=TRUE)
     }
 
     res = NULL
+
     usage = rsaga.geoprocessor(lib, module, param = list(h=""), env = env,
-        intern = TRUE, show.output.on.console = FALSE, silent = FALSE)
+        intern = TRUE, show.output.on.console = FALSE, silent = FALSE, 
+        check.module.exists = FALSE, warn = -1)
+
     skip = 0
     while ((length(usage)>(1+skip)) & (substr(usage[1+skip],1,6)!="Usage:")) {
         if (substr(usage[1+skip],1,8) %in% 
@@ -270,6 +347,16 @@ rsaga.get.usage = function(lib, module, env=rsaga.env(), show=TRUE)
 
 rsaga.html.help = function(lib, module, env=rsaga.env(), ...)
 {
+    warning("rsaga.html.help is currently unavailable\n",
+            "It may become available in future releases as an interface\n",
+            "to SAGA GIS Wiki pages that are currently under development\n",
+            "(see http://sourceforge.net/apps/trac/saga-gis/wiki )")
+    url = "http://sourceforge.net/apps/trac/saga-gis/wiki"
+    browseURL(url, ...)
+    return()
+    
+    # This code may be useful for future development:
+
     if (missing(module)) module = NA
 
     if (is.function(lib))
@@ -343,30 +430,60 @@ rsaga.html.help = function(lib, module, env=rsaga.env(), ...)
 
 rsaga.geoprocessor = function(
     lib, module = NULL, param = list(),
-    silent = FALSE, beep.off,
+    prefix = NULL, silent = FALSE, beep.off,
     show.output.on.console = TRUE, invisible = TRUE, intern = TRUE,
-    env = rsaga.env(), display.command = FALSE, reduce.intern = TRUE, ... )
+    env = rsaga.env(), display.command = FALSE, reduce.intern = TRUE,
+    check.module.exists = TRUE, warn = options("warn")$warn, ... )
 {
-    old.wd = getwd()
-    old.saga = Sys.getenv("SAGA")
-    old.saga.mlb = Sys.getenv("SAGA_MLB")
-    on.exit(setwd(old.wd))
-    on.exit(Sys.setenv(SAGA=old.saga,SAGA_MLB=old.saga.mlb), add=TRUE)
-    
-    setwd(env$workspace)
-    Sys.setenv(SAGA=env$path, SAGA_MLB=env$modules)
-    
-    if (.Platform$OS.type == "windows") {
-        # It is safer to use quotes under Windows:
-        command = paste( shQuote( paste( env$path, .Platform$file.sep, env$cmd, sep="" ) ),
-                        " ", lib, sep="")
-    } else {
-        # Trying to use quotes under Unix too:
-        command = paste( shQuote( paste( env$path, .Platform$file.sep, env$cmd, sep="" ) ),
-                        " ", "lib", lib, sep="")
+    # Issue warning if using SAGA GIS version that has not been tested with RSAGA:
+    if (!is.null(env$version)) {
+        if (!is.na(env$version)) {
+            if (!any(c("2.0.4","2.0.5","2.0.6","2.0.7") == env$version))
+                warning("This RSAGA version has been tested with SAGA GIS versions 2.0.4 - 2.0.7.\n",
+                    "You seem to be using SAGA GIS ", env$version, ", which may cause problems due to\n",
+                    "changes in names and definitions of SAGA module arguments, etc.", sep = "" )
+        }
     }
+
+    # Change working directory:
+    old.wd = getwd()
+    on.exit(setwd(old.wd))
+    setwd(env$workspace)
+
+    # Set environment variables SAGA and SAGA_MLB:
+    # (This might be redundant, but it probably won't hurt. Might also be version specific.)
+    old.saga = Sys.getenv("SAGA", unset = NA)
+    old.saga.mlb = Sys.getenv("SAGA_MLB", unset = NA)
+    on.exit(if (is.na(old.saga)) Sys.unsetenv("SAGA") else Sys.setenv(SAGA=old.saga), add = TRUE)
+    on.exit(if (is.na(old.saga.mlb)) Sys.unsetenv("SAGA_MLB") else Sys.setenv(SAGA_MLB=old.saga.mlb), add=TRUE)
+    Sys.setenv(SAGA=env$path, SAGA_MLB=env$modules)
+
+    # Core part of system call:    
+    command = shQuote( paste( env$path, .Platform$file.sep, env$cmd, sep="" ) )
+
+    # Prefix e.g. -h or --help for general help (this is currently used by rsaga.get.version)
+    if (!is.null(prefix))
+        command = paste( command, prefix, sep = " " )
+
+    # Library - in the case of unix systems, it must be preceded by 'lib':
+    if (!is.null(lib))
+        command = paste( command, " ", 
+            ifelse(.Platform$OS.type == "windows", "", "lib"),
+            lib, sep = "")
     
-    if (!is.null(module)) {
+    if (!is.null(lib) & !is.null(module)) {
+        if (check.module.exists) {
+            ex = rsaga.module.exists(lib, module, env=env)
+            if (!ex) {
+                cat("Module '", module, "' not found in SAGA library '", lib, "'.\n",
+                     "Check if module name has changed (or is misspelled)?\n", sep = "")
+                cat("The following (non-interactive) modules currently exist in this SAGA library:\n\n")
+                print(rsaga.get.modules(lib, env=env, interactive = FALSE))
+                cat("\n")
+                stopifnot(rsaga.module.exists(lib,module, env=env))
+            }
+        }
+    
         if (is.character(module)) module = shQuote(module)
         command = paste(command, module)
         if (silent) {
@@ -386,20 +503,36 @@ rsaga.geoprocessor = function(
             }
             nm = names(param)
             val = as.character(unlist(param))
+            # line added by Johan v.d.W.:
+            val[ nchar(val) > 0 ] = shQuote( val[ nchar(val) > 0 ] )
             param = paste("-",nm," ",val,sep="",collapse=" ")
             command = paste(command, param)
         }
     }
+
     if (display.command) cat(command,"\n")
+
     if (!missing(beep.off))
         warning("rsaga.geoprocessor currently ignores 'beep.off'")
+
     if (.Platform$OS.type == "windows") {
+        # Some rsaga core calls need to suppress warnings
+        # related to non-zero exit codes of saga_cmd:
+        oldwarn = options("warn")$warn
+        on.exit(options(warn = oldwarn), add = TRUE)
+        options(warn = warn)
+        # Actual saga_cmd call:
         res = system( command, intern=intern,
             show.output.on.console=show.output.on.console, 
             invisible=invisible, ...)
+        options(warn = oldwarn)
     } else {
+        oldwarn = options("warn")$warn
+        on.exit(options(warn = oldwarn), add = TRUE)
+        options(warn = warn)
         res = system( command, intern=intern, ...)
         # 'show.output.on.console' and 'invisible' only work under Windows
+        options(warn = oldwarn)
     }
     if (intern) {
         if (reduce.intern) {
