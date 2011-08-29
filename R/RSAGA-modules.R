@@ -506,7 +506,7 @@ rsaga.pisr = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
     
     rsaga.geoprocessor(lib = "ta_lighting", 
         module = "Potential Incoming Solar Radiation",  # = 2
-        param = param, ...)
+        param = param, env = env, ...)
 }
 
 
@@ -563,7 +563,7 @@ rsaga.solar.radiation = function(in.dem, out.grid, out.duration, latitude,
     }
     rsaga.geoprocessor(lib = "ta_lighting", 
         module = "Incoming Solar Radiation",  # = 2
-        param = param, ...)
+        param = param, env = env, ...)
 }
 
 
@@ -879,6 +879,9 @@ rsaga.add.grid.values.to.points = function(in.shapefile,
 {
     in.grids = default.file.extension(in.grids,".sgrd")
     in.grids = paste(in.grids, collapse = ";")
+    # check if this is SAGA version dependent:
+    in.shapefile = default.file.extension(in.shapefile,".shp")
+    out.shapefile = default.file.extension(out.shapefile,".shp")
     method = match.arg.ext(method, base = 0, ignore = TRUE, numeric = TRUE)
     param = list(SHAPES = in.shapefile, GRIDS = in.grids,
                 RESULT = out.shapefile, INTERPOL = method)
@@ -1004,7 +1007,7 @@ rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
         
     rsaga.geoprocessor(lib = "grid_gridding", 
         module = "Nearest Neighbour", # was: = 2 (=1 in earlier SAGA version)
-        param, ...)
+        param, env = env, ...)
 }
 
 rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
@@ -1033,7 +1036,7 @@ rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
         
     rsaga.geoprocessor(lib = "grid_gridding", 
         module = "Modifed Quadratic Shepard", # = 4 (earlier SAGA versions: =2)
-        param, ...)
+        param, env = env, ...)
 }
 
 
@@ -1056,7 +1059,7 @@ rsaga.triangulation = function(in.shapefile, out.grid, field,
         
     rsaga.geoprocessor(lib = "grid_gridding", 
         module = "Triangulation", # = 5 (earlier SAGA versions: =4)
-        param, ...)
+        param, env = env, ...)
 }
 
 
@@ -1099,7 +1102,7 @@ rsaga.ordinary.kriging = function(in.shapefile, out.grid,
         
     rsaga.geoprocessor(lib = "geostatistics_kriging", 
         module = "Ordinary Kriging", # =5
-        param, ...)
+        param, env = env, ...)
 }
 
 
