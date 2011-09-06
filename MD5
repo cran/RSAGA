@@ -1,11 +1,11 @@
-5a1d15fbac399ddbc5c2128092af2611 *DESCRIPTION
+60cb3a5f2227326f0776177ecd3fae65 *DESCRIPTION
 dcdbbc920ebd87ec0680108a729fd977 *R/RSAGA-core.R
-85511739dbe4e6b22dae40658bdb5478 *R/RSAGA-modules.R
+a7bb63f01839d73ff9eb9d9704bf2b77 *R/RSAGA-modules.R
 7e62f73b1c9daf1b2951f61bd65ba4bc *R/RSAGA-utils.R
 f473f187d260c221c62860076ef4e8ae *R/gridtools.R
 d41d8cd98f00b204e9800998ecf8427e *configure
 d41d8cd98f00b204e9800998ecf8427e *configure.win
-954a7fc1316200eb043ede0df455e768 *man/RSAGA-package.Rd
+3d8d1c74ea1fe9e051c625ed8f321ffa *man/RSAGA-package.Rd
 a97a8102ee6f75de619c7ba302117dcd *man/centervalue.Rd
 4e407bc92b4a38df52446d6d07571134 *man/create.variable.name.Rd
 cf04d62065d63b12a9364511d8f68ab9 *man/focal.function.Rd
