@@ -274,7 +274,7 @@ pick.from.points = function(data, src, pick,
     }
     the.src = src
     rm(src)
-
+    
     if (method=="krige") {
         require(gstat)
         loc = as.formula(paste("~",X.name,"+",Y.name))
@@ -282,7 +282,6 @@ pick.from.points = function(data, src, pick,
             form = as.formula(paste(pick[p],"~ 1"))
             src = the.src[ !is.na(the.src[,pick[p]]) , ]
             if (nrow(src)==0) next
-            #src$tmp = src[,pick[p]]
             krg = krige(
                 form, loc=loc, data=src, newdata=data,
                 model=model, nmax=nmax, nmin=nmin,
@@ -308,8 +307,8 @@ pick.from.points = function(data, src, pick,
 }
 
 
-pick.from.ascii.grid = function( data, file, 
-    path, varname, prefix,
+internal.pick.from.ascii.grid = function( data, file, 
+    path = NULL, varname = NULL, prefix = NULL,
     method = c("nearest.neighbour","krige"),
     nodata.values = c(-9999,-99999), at.once, quiet = TRUE,
     X.name = "x", Y.name = "y", nlines = Inf,
@@ -320,9 +319,9 @@ pick.from.ascii.grid = function( data, file,
     stopifnot( Y.name %in% colnames(data) )
 
     # determine variable name from file name if 'varname' is missing:
-    if (missing(varname)) {
+    if (is.null(varname)) {
         if (is.character(file)) {
-            varname = create.variable.name(file)
+            varname = RSAGA::create.variable.name(file)
         } else {
             if (cbind) {
                 stop("'varname' must be specified unless 'file' is a character string with the filename")
@@ -332,7 +331,7 @@ pick.from.ascii.grid = function( data, file,
     }
 
     # add a prefix to the variable?
-    if (!missing(prefix)) if (!is.null(prefix)) if (prefix!="")
+    if (!is.null(prefix)) if (prefix!="")
         varname = paste(prefix,varname,sep=".")
 
     method = match.arg(method)
@@ -341,8 +340,8 @@ pick.from.ascii.grid = function( data, file,
         at.once = (method != "nearest.neighbour")
     
     if (is.character(file)) {
-        file = default.file.extension(file,".asc")
-        if (!missing(path)) if (path!="") file = file.path(path,file)
+        file = RSAGA::default.file.extension(file,".asc")
+        if (!is.null(path)) if (path!="") file = file.path(path,file)
         if (!file.exists(file)) stop("file ",file," not found")
         con = file(file,open="r")
         on.exit(close(con), add = TRUE)
@@ -367,19 +366,19 @@ pick.from.ascii.grid = function( data, file,
         if (!at.once)
             warning("row-by-row processing of grids is not yet implemented for kriging interpolation\n",
                 "trying to process the whole grid at once...")
-        src = read.ascii.grid(con, nodata.values = nodata.values, 
+        src = RSAGA::read.ascii.grid(con, nodata.values = nodata.values, 
                 na.strings = na.strings)
-        src = grid.to.xyz(src, colnames=c(X.name,Y.name,varname))
+        src = RSAGA::grid.to.xyz(src, colnames=c(X.name,Y.name,varname))
         if (missing(radius)) radius = 2.5 * hdr$cellsize
         if (missing(range)) range = radius
         if (range > radius) radius = range
-        data = pick.from.points(data, src, pick = varname,
+        data = RSAGA::pick.from.points(data, src, pick = varname,
             X.name=X.name, Y.name = Y.name,
             method="krige", range = range, radius = radius,...)
 
     } else if (method=="nearest.neighbour")
     {
-        hdr = read.ascii.grid.header(con)
+        hdr = RSAGA::read.ascii.grid.header(con)
         nodata.values = unique(c(nodata.values,hdr$nodata_value))
 
         select = cbind( 1 + round( (data[,X.name] - (hdr$xllcorner+hdr$cellsize/2)) / hdr$cellsize ),
@@ -412,7 +411,7 @@ pick.from.ascii.grid = function( data, file,
                             if ((select[j,1]>=1) & (select[j,1]<=hdr$ncols))
                                 data[j,nc] = v[ select[j,1] ]
                         }
-                        if (!quiet) cat("\n matches:",which(ass),"\n")
+                        ###if (!quiet) cat("\n matches:",which(ass),"\n")
                     }
                 }
             } else # if (at.once)
@@ -430,8 +429,114 @@ pick.from.ascii.grid = function( data, file,
     } # end if (method=="nearest.neighbour")
     
     if (!cbind) data = data[,nc]
+##print(str(data)); cat("----\n")
     return(data)
 }
+
+pick.from.ascii.grids = function( data, file, path = NULL, varname = NULL, prefix = NULL,
+    cbind = TRUE, quiet = TRUE, ... )
+{
+    if (!is.null(path)) {
+        if (length(path) == 1) path = rep(path, length(file))
+        stopifnot(length(path) == length(file))
+    }
+    if (!is.null(varname)) {
+        stopifnot(length(varname) == length(file))
+    }
+    if (!is.null(prefix)) {
+        if (length(prefix) == 1) prefix = rep(prefix, length(file))
+        stopifnot(length(prefix) == length(file))
+    }
+
+    if (length(file) == 1) {
+        return( pick.from.ascii.grid( data = data, file = file, path = path, varname = varname, 
+            prefix = prefix, cbind = cbind, quiet = quiet, ...) )
+    }
+
+    if (is.null(varname)) {
+        if (is.character(file)) {
+            varname = unname( sapply(file, RSAGA::create.variable.name) )
+        } else {
+            if (cbind) {
+                stop("'varname' must be specified unless 'file' is a character string with the filename")
+            } else varname = paste("X", c(1:length(file)), sep = "")
+        }
+    }
+
+    # add a prefix to the variable names?
+    if (!is.null(prefix))
+        for (i in 1:length(file))
+            if (prefix!="")
+                varname[i] = paste(prefix[i],varname[i],sep=".")
+
+    for (i in 1:length(file)) {
+        if (!quiet) cat("Processing file '", file[i], "' (", i, " of ", length(file), ")...\n", sep="")
+        res = pick.from.ascii.grid( data = data, file = file[i], path = path[i], varname = varname[i],
+            prefix = prefix[i], cbind = cbind, quiet = TRUE, ...)
+        if (cbind) {
+            data = res
+        } else {
+            if (i == 1) {
+                RES = res
+            } else RES = cbind(RES, res)
+        }
+    }
+    if (!cbind) {
+        data = as.data.frame(RES)
+        colnames(data) = varname
+    }
+    return(data)
+}
+
+
+pick.from.ascii.grid = function( data, file, path = NULL, varname = NULL, prefix = NULL,
+    method = c("nearest.neighbour","krige"), cbind = TRUE,
+    parallel = FALSE, nsplit, quiet = TRUE, ... )
+{
+    method = match.arg(method)
+
+    if (missing(nsplit)) {
+        if (method == "krige") {
+            nsplit = 1 + parallel
+        } else {
+            nsplit = ceiling(nrow(data) / 1500)
+            if (parallel)  nsplit = max(2, nsplit)
+        }
+    }
+
+    if (nsplit == 1) {
+        return( internal.pick.from.ascii.grid(data = data, file = file, path = path, varname = varname, 
+            prefix = prefix, method = method, quiet = quiet, ...))
+    } else {
+        require(plyr)
+        progress = "none"
+        if (parallel) quiet = TRUE
+        if (nrow(data) >= 1000 & !quiet) {
+            progress = ifelse(.Platform$OS.type=="windows" & .Platform$GUI == "Rgui", "win", "text")
+            quiet = TRUE
+        }
+        PICKSPLIT = floor( seq(0, nsplit-0.001, length = nrow(data)) )
+        if (cbind) {
+            data = ddply( data, .variables = .(PICKSPLIT), .fun = internal.pick.from.ascii.grid,
+                file = file, path = path, varname = varname, prefix = prefix, method = method, 
+                quiet = quiet, cbind = cbind, ...,
+                .progress = progress, .parallel = parallel )
+            data$PICKSPLIT = NULL
+            return(data)
+        } else {
+            res = dlply( data, .variables = .(PICKSPLIT), .fun = internal.pick.from.ascii.grid,
+                file = file, path = path, varname = varname, prefix = prefix, method = method, 
+                quiet = quiet, cbind = cbind, ...,
+                .progress = progress, .parallel = parallel )
+            ###print(str(res))
+            res = unlist(res, use.names = FALSE)
+            ###print(str(res))
+            return(res)
+        }
+    }
+}
+
+
 
 
 grid.to.xyz = function(data,header,varname="z",colnames=c("x","y",varname)) {
@@ -643,12 +748,19 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
             for (na in nodata.values)  v0[ v0==na ] = NA
             v0[ v0 < valid.range[1] ] = NA
             v0[ v0 > valid.range[2] ] = NA
-                
+             
+            # With plyr package instead of for loop:   
+            #require(plyr)
+            #mycall = function(x,...) do.call(fun,list(x,...))
+            #res = t(laply(.data = as.list(v0), .fun = mycall, .drop = FALSE, .parallel = parallel, ...))
+            # ...but for some reason it doesn't work with .parallel = TRUE
+
             res = matrix(NA,ncol=in.hdr$ncols,nrow=N.out)
             for (j in 1:in.hdr$ncol) {
                 r = do.call(fun,list(v0[j],...))
                 res[,j] = r
             }
+
             res[ is.na(res) ] = out.nodata.value
             for (k in 1:N.out) {
                 txt = paste(sprintf(fmt,res[k,]),collapse=" ")
@@ -1370,4 +1482,3 @@ multi.local.function = function(
 
     return(out.filenames)
 }
-

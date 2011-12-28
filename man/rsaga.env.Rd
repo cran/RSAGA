@@ -1,6 +1,5 @@
 \name{rsaga.env}
 \alias{rsaga.env}
-\alias{rsaga.get.version}
 \title{Set up the RSAGA Geoprocessing Environment}
 \description{\code{rsaga.env} creates a list with system-dependent
     information on SAGA path, module path and
@@ -15,7 +14,6 @@ rsaga.env( workspace=".",
     os.default.path = ifelse(.Platform$OS.type=="windows",
         "C:/Progra~1/SAGA-GIS",
         sub('/saga_cmd','',system2('which',args='saga_cmd',stdout=TRUE))) )
-rsaga.get.version(env = rsaga.env(version=NA), ...)
 }
 \arguments{
   \item{workspace}{path of the working directory for SAGA;
@@ -28,7 +26,7 @@ rsaga.get.version(env = rsaga.env(version=NA), ...)
   \item{modules}{path in which to find SAGA libraries;
         see Details}
   \item{version}{optional character string: SAGA GIS (API) version, 
-        e.g. \code{"2.0.7"}; if missing, a call to \code{saga_cmd}
+        e.g. \code{"2.0.8"}; if missing, a call to \code{\link{rsaga.get.version}}
         is used to determine version number of SAGA API }
   \item{check.libpath}{if \code{TRUE} (default), first look
         for SAGA in the folder where the RSAGA package is
@@ -43,19 +41,20 @@ rsaga.get.version(env = rsaga.env(version=NA), ...)
         in the folder specified by \code{os.default.path}.}
   \item{os.default.path}{under Windows, \code{C:/Progra~1/SAGA-GIS};
         under unix, an attempt is made to locate \code{saga_cmd}}
-  \item{env}{list, setting up a SAGA geoprocessing environment
-        as created by \code{\link{rsaga.env}} }
-  \item{\ldots}{additional arguments to \code{\link{rsaga.geoprocessor}} }
 }
 \details{IMPORTANT: Unlike R functions such as \code{\link{options}}, which
 changes and saves settings somewhere in the background, \code{\link{rsaga.env}}
 does not actually 'save' any settings, it simply creates a list that can
 (and has to) be passed to other \code{rsaga.*} functions. See example below.
 
-\code{rsaga.env} tries to compile infromation on the SAGA
-environment; this is not easy because there is no standard
-installation folder and procedure. If \code{path} is
-missing, \code{rsaga.env} first looks for an environment
+I strongly recommend to install SAGA GIS in \code{"C:/Program Files/SAGA-GIS"} in the
+case of English-language Windows platforms (the equivalent non-English installation folder
+in the case of non-English Windows versions seems to work as well). If this is the
+only SAGA GIS copy on the computer and you do \emph{not} define a Windows environment variable
+\code{SAGA}, then RSAGA should normally be able to find your SAGA GIS installation.
+
+\code{rsaga.env} tries to compile infromation on the (R)SAGA
+environment. If \code{path} is missing, \code{rsaga.env} first looks for an environment
 variable \code{SAGA}; if this is undefined, it checks the
 current working directory, then the paths given in the 
 PATH environment variable, and finally the function's
@@ -64,7 +63,7 @@ on non-Windows systems).
 
 The default \code{modules} folder under Windows is the \code{modules}
 subfolder of the SAGA binaries' folder. The \code{SAGA_MLB} environment variable
-is not being checked.
+is \emph{not} being checked by \code{rsaga.env}.
 
 Under Unix, the default \code{modules} folder is as specified in the
 \code{SAGA_MLB} environment variable. If this is empty / not set, then
@@ -82,13 +81,8 @@ section.}
 \note{Note that the default \code{workspace} is \code{"."},
 not \code{getwd()}; i.e. the default SAGA workspace folder
 is not fixed, it changes each time you change the R working
-directory using \code{setwd}.
-
-The default SAGA folder used to be \code{C:/Progra~1/saga_vc},
-now it is \code{C:/Progra~1/SAGA-GIS} because the most recent SAGA version
-installs itself in this folder by default.
-}
-%\seealso{  }
+directory using \code{setwd}.}
+\seealso{\code{\link{rsaga.get.version}}}
 \examples{
 \dontrun{
 # Check the default RSAGA environment on your computer:
@@ -104,7 +98,7 @@ rsaga.hillshade("dem","hillshade",env=myenv)
 # ...creates (or overwrites) grid "C:/sagadata/hillshade.sgrd"
 # derived from digital elevation model "C:/sagadata/dem.sgrd"
 
-# Sama calculation with different SAGA version:
+# Same calculation with different SAGA version:
 # (I keep several versions in SAGA-GIS_2.0.x folders:)
 myenv05 = rsaga.env(path = "C:/Progra~1/SAGA-GIS_2.0.5")
 rsaga.hillshade("dem","hillshade205",env=myenv05)

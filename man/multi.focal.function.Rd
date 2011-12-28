@@ -91,7 +91,7 @@ multi.focal.function(in.grids, in.grid.prefix, in.factor.grid,
         for output grid file.}
   \item{dec}{character, specifying the decimal mark to be used for
         input and output.}
-  \item{quiet}{If \code{TRUE}, gives some output (\code{"*"}) after
+  \item{quiet}{If \code{FALSE}, gives some output (\code{"*"}) after
         every 10th line of the grid file and when the job is done.}
   \item{nlines}{Number of lines to be processed; useful for testing purposes.}
   \item{na.action}{function: determines if/how \code{NA} values are omitted
