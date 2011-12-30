@@ -125,8 +125,8 @@ rsaga.env = function( workspace=".",
                 } else modules = "usr/local/lib/saga"
             }
         }
-		} else {
-		    # Empty character string interpreted as ".",
+        } else {
+            # Empty character string interpreted as ".",
         # i.e. current working directory:
         if (modules == "") modules = getwd()
     }
@@ -160,7 +160,36 @@ rsaga.env = function( workspace=".",
     return( env )
 }
 
-rsaga.get.version = function(env = rsaga.env(version=NA), ...) {
+rsaga.get.version = function(env = rsaga.env(version=NA), ...) 
+{
+    version = NA
+
+    # Added 27-Dec-2011:
+    # saga_cmd --version (only works in SAGA GIS 2.0.8+)
+    out = rsaga.geoprocessor(lib = NULL, prefix = "--version", show.output.on.console = FALSE, 
+        warn = -1, env = env, ...)
+    if (all(out != "error: module library not found [--version]")) {
+        if (length(out >= 1)) {
+            if (any(sel <- (substr(out,1,9) == "SAGA API:"))) {
+                # This first option was mentioned by Volker Wichmann on [saga-gis-developer]
+                # although SAGA GIS 2.0.8 for Windows uses a different output format:
+                out = gsub("SAGA API:", "", out[sel][1], fixed = TRUE)
+                out = gsub(" ", "", out)
+                return(out)
+            } else if (any(sel <- (substr(out,1,13) == "SAGA Version:"))) {
+                # Output format used by SAGA GIS 2.0.8 for Windows:
+                # SAGA Version: 2.0.8
+                out = gsub("SAGA Version:", "", out[sel][1], fixed = TRUE)
+                out = gsub(" ", "", out)
+                return(out)
+            }
+        }
+    }
+    # End added code
+
+    # Older SAGA GIS versions:
+    # ------------------------
+    
     #### check if this function works on unix????
     # Retrieve basic help page of saga_cmd:
     out = rsaga.geoprocessor(lib = NULL, prefix = "-h", show.output.on.console = FALSE, 
@@ -168,7 +197,6 @@ rsaga.get.version = function(env = rsaga.env(version=NA), ...) {
         
     # Process the help page line by line in order to find lines starting
     # with "SAGA API " (or "SAGA CMD ", if no "SAGA API " line available)
-    version = NA
     for (i in 1:length(out)) {
         if (substr(out[i],1,9) == "SAGA API ") {
             if (as.numeric(substr(out[i],10,10)) > 0) {
@@ -178,8 +206,8 @@ rsaga.get.version = function(env = rsaga.env(version=NA), ...) {
         } else if (substr(out[i],1,9) == "SAGA CMD ") {
             if ( is.na(version) & any( as.character(0:9) == substr(out[i],10,10) ) ) {
                 version = gsub(" ", "", substr(out[i],10,nchar(out[i])), fixed = TRUE)
-                # no 'break' because we're still hoping to find info on SAGA API version
-                # SAGA 2.0.4 only shows SAGA CMD version = 2.0.4, however newer versions
+                # no 'break' here because we're still hoping to find info on SAGA API version
+                # SAGA 2.0.4 only shows SAGA CMD version = 2.0.4, however *some* versions
                 # distinguish between SAGA API and SAGA CMD versions.
             }
         }
@@ -201,7 +229,7 @@ rsaga.get.lib.modules = function(lib, env=rsaga.env(), interactive=FALSE)
 {
     res = NULL
     
-    if (lib == "opencv" & (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")) {
+    if ( lib == "opencv" & (is.na(env$version) | (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")) ) {
         warning("skipping library 'opencv' because it produces an error\n",
             "  when requesting its module listing in SAGA version 2.0.4 - 2.0.6)")
         # return an empty data.frame of the same format as in the successful situation:
@@ -438,8 +466,8 @@ rsaga.geoprocessor = function(
     # Issue warning if using SAGA GIS version that has not been tested with RSAGA:
     if (!is.null(env$version)) {
         if (!is.na(env$version)) {
-            if (!any(c("2.0.4","2.0.5","2.0.6","2.0.7") == env$version))
-                warning("This RSAGA version has been tested with SAGA GIS versions 2.0.4 - 2.0.7.\n",
+            if (!any(c("2.0.4","2.0.5","2.0.6","2.0.7","2.0.8") == env$version))
+                warning("This RSAGA version has been tested with SAGA GIS versions 2.0.4 - 2.0.8.\n",
                     "You seem to be using SAGA GIS ", env$version, ", which may cause problems due to\n",
                     "changes in names and definitions of SAGA module arguments, etc.", sep = "" )
         }

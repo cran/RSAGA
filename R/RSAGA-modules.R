@@ -406,7 +406,8 @@ rsaga.pisr = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
     bending.lon.offset = match.arg.ext(bending.lon.offset, c("left","center","right","user"), 
         numeric = TRUE, ignore.case = TRUE, base = 0)
 
-    stopifnot( (latitude>=-90) & (latitude<=90) )
+    if (!is.null(latitude))
+        stopifnot( (latitude>=-90) & (latitude<=90) )
     stopifnot( length(time.range)==2 )
     stopifnot( all(time.range>=0) & all(time.range<=24) & (time.range[1]<time.range[2]) )
     stopifnot( (time.step>0) & (time.step<=12) )
@@ -416,17 +417,24 @@ rsaga.pisr = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
 
     param = list( GRD_DEM=in.dem, 
         GRD_DIRECT = out.direct.grid, GRD_DIFFUS = out.diffuse.grid,
-        GRD_TOTAL=out.total.grid, GRD_RATIO=out.ratio.grid,
+        GRD_TOTAL = out.total.grid, GRD_RATIO = out.ratio.grid,
         DURATION = out.duration, 
         SUNRISE = out.sunrise, SUNSET = out.sunset,
-        UNITS=unit, SOLARCONST=as.numeric(solconst), LOCALSVF = local.svf,
+        UNITS = unit, SOLARCONST = as.numeric(solconst), LOCALSVF = local.svf,
         BENDING_BENDING = enable.bending,
-        METHOD=method,
-        LATITUDE=as.numeric(latitude), 
+        METHOD = method,
+        #LATITUDE = as.numeric(latitude),  # removed 27 Dec 2011
         DHOUR = time.step )
+     
+    # Added 27 Dec 2011:   
+    if (!is.null(latitude)) {
+        stopifnot((latitude >= -90) & (latitude <= 90))
+        param = c(param, LATITUDE = as.numeric(latitude))
+    }
         
     if (!is.null(in.svf.grid)) param = c( param, GRD_SVF=in.svf.grid )
     if (!is.null(in.vapour.grid)) param = c( param, GRD_VAPOUR=in.vapour.grid )
+    stopifnot( !is.null(latitude) | !is.null(in.latitude.grid) ) # added 27 Dec 2011
     if (!is.null(in.latitude.grid)) param = c( param, GRD_LAT=in.latitude.grid )
     if (!is.null(in.longitude.grid)) param = c( param, GRD_LON=in.longitude.grid )
 
@@ -1119,7 +1127,7 @@ pick.from.saga.grid = function( data, filename, path, varname,
         prec = prec, show.output.on.console = show.output.on.console,
         env = env)
     on.exit(unlink(temp.asc), add = TRUE)
-    data = pick.from.ascii.grid(data,temp.asc, varname = varname,...)
+    data = pick.from.ascii.grid(data, temp.asc, varname = varname, ...)
     invisible(data)
 }
 

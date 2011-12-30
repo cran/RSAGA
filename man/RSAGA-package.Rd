@@ -3,16 +3,17 @@
 \alias{RSAGA}
 \docType{package}
 \title{RSAGA: SAGA Geoprocessing and Terrain Analysis in R}
-\description{RSAGA provides access to geocomputing and terrain analysis functions of SAGA from within R by running the command line version of SAGA. In addition, several R functions for handling and manipulating ASCII grids are provided, including a flexible framework for applying local functions (including predict methods of fitted models) or focal functions to multiple grids.}
+\description{RSAGA provides access to geocomputing and terrain analysis functions of SAGA GIS from within R by running the command line version of SAGA. In addition, several R functions for handling and manipulating ASCII grids are provided, including a flexible framework for applying local functions (including predict methods of fitted models) or focal functions to multiple grids.}
 \details{
 \tabular{ll}{
 Package: \tab RSAGA\cr
 Type: \tab Package\cr
-Version: \tab 0.92-2\cr
-Date: \tab 2011-08-29\cr
+Version: \tab 0.93-1\cr
+Date: \tab 2011-12-28\cr
 License: \tab GPL-2\cr
 }
-RSAGA provides direct access to SAGA functions including a comprehensive set
+RSAGA provides direct access to SAGA GIS functions including, for example,
+a comprehensive set
 of terrain analysis algorithms for calculating local morphometric properties
 (slope, aspect, curvature), hydrographic characteristics (size, height, and
 aspect of catchment areas), and other process-related terrain attributes
@@ -29,16 +30,13 @@ variables.  Furthermore, functions are provided for conveniently picking
 values at point locations from a grid using kriging or nearest neighbour 
 interpolation.
 
-RSAGA requires the free SAGA GIS (versions 2.0.4 - 2.0.7 are currently 
+RSAGA requires the free SAGA GIS (versions 2.0.4 - 2.0.8 are currently 
 supported) and its user-contributed modules to be available on your computer.
 These can be downloaded under GPL from
 \url{http://sourceforge.net/projects/saga-gis/}.  Please check 
 \code{\link{rsaga.env}} to make sure that RSAGA can find your 
-local installation of SAGA. RSAGA has been tested with SAGA GIS
-versions 2.0.4 to 2.0.7; however, interface functions for interpolation
-methods currently do not work with SAGA GIS 2.0.5+; either use SAGA GIS 2.0.4
-instead, or call interpolation modules directly using the (lower level)
-rsaga.geoprocessor function.
+local installation of SAGA. You may need to 'tell' RSAGA where to
+find SAGA GIS.
 
 Thanks to Olaf Conrad, Andre Ringeler and all the other SAGA
 developers and contributors providing this excellent geocomputing tool!

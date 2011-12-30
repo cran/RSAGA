@@ -2,13 +2,15 @@
 \alias{pick.from.points}
 \alias{pick.from.shapefile}
 \alias{pick.from.ascii.grid}
+\alias{pick.from.ascii.grids}
 \alias{pick.from.saga.grid}
+\alias{internal.pick.from.ascii.grid}
 \title{Pick Variable from Spatial Dataset}
 \description{These functions pick (i.e. interpolate without worrying too
 much about theory) values of a spatial variables from a data stored in a
 data.frame, a point shapefile, or an ASCII or SAGA grid, using nearest neighbor
-or kriging interpolation. \code{pick.from.points} is the core function that
-is called by the different wrappers.}
+or kriging interpolation. \code{pick.from.points} and \code{[internal.]pick.from.ascii.grid}
+are the core functions that are called by the different wrappers.}
 \usage{
 pick.from.points(data, src, pick, 
     method = c("nearest.neighbour", "krige"), 
@@ -17,12 +19,17 @@ pick.from.points(data, src, pick,
     model = vgm(sill - nugget, "Sph", range = range, nugget = nugget), 
     log = rep(FALSE, length(pick)), X.name = "x", Y.name = "y", cbind = TRUE)
 pick.from.shapefile(data, shapefile, X.name = "x", Y.name = "y", ...)
-pick.from.ascii.grid(data, file, path, varname, prefix, 
+pick.from.ascii.grid(data, file, path = NULL, varname = NULL, prefix = NULL, 
+    method = c("nearest.neighbour","krige"), cbind = TRUE,
+    parallel = FALSE, nsplit, quiet = TRUE, ...)
+pick.from.saga.grid(data, filename, path, varname, prec = 7,
+    show.output.on.console = FALSE, env = rsaga.env(), ...)
+pick.from.ascii.grids(data, file, path = NULL, varname = NULL, prefix = NULL,
+    cbind = TRUE, quiet = TRUE, ...)
+internal.pick.from.ascii.grid(data, file, path = NULL, varname = NULL, prefix = NULL, 
     method = c("nearest.neighbour", "krige"), nodata.values = c(-9999, -99999), 
     at.once, quiet = TRUE, X.name = "x", Y.name = "y", 
     nlines = Inf, cbind = TRUE, range, radius, na.strings = "NA", ...)
-pick.from.saga.grid(data, filename, path, varname, prec = 7,
-    show.output.on.console = FALSE, env = rsaga.env(), ...)
 }
 \arguments{
   \item{data}{data.frame giving the coordinates (in columns specified by
@@ -96,15 +103,70 @@ pick.from.saga.grid(data, filename, path, varname, prec = 7,
         indicates whether to capture 
         the output of the command and show it on the R console
         (see \code{\link{system}}, \code{\link{rsaga.geoprocessor}}).}
-  \item{...}{arguments to be passed to \code{pick.from.points}}
+  \item{nsplit}{split the data.frame \code{data} in \code{nsplit} disjoint
+        subsets in order to increase efficiency by using \code{ddply}
+        in package \pkg{plyr}.
+        The default seems to perform well in many situations. }
+  \item{parallel}{logical (default: \code{FALSE}): enable parallel processing;
+        requires additional packages such as \pkg{doSMP} or \pkg{doMC}. See
+        example below and \code{\link{ddply}} }
+  \item{...}{arguments to be passed to \code{pick.from.points}, and to \code{internal.pick.from.ascii.grid}
+        in the case of \code{pick.from.ascii.grid}}
 }
-% \details{ }
+\details{
+\code{pick.from.points} interpolates the variables defined by \code{pick} in the \code{src}
+data.frame to the locations provided by the \code{data} data.frame. Only nearest neighbour
+and ordinary kriging interpolation are currently available. This function is intended for
+'data-rich' situations in which not much thought needs to be put into a geostatistical 
+analysis of the spatial structure of a variable. In particular, this function is supposed to
+provide a simple, 'quick-and-dirty' interface for situations where the \code{src} data points 
+are very densely distributed compared to the \code{data} locations.
+
+\code{pick.from.shapefile} is a front-end of \code{pick.from.points} for
+point shapefiles.
+
+\code{pick.from.ascii.grid} retrieves data values from an ASCII raster file
+using either nearest neighbour or ordinary kriging interpolation. The latter
+may not be possible for large raster data sets because the entire grid needs
+to be read into an R matrix. Split-apply-combine strategies are used to improve
+efficiency and allow for parallelization.
+
+The optional parallelization of \code{pick.from.ascii.grid} computation requires 
+the use of a \emph{parallel backend} package such as \pkg{doSMP} or 
+\pkg{doMC}, and the parallel backend needs to be registered before calling this
+function with \code{parallel=TRUE}. The example section provides an example using
+\pkg{doSMP} on Windows. I have seen 25-40% reduction in processing time by parallelization
+in some examples that I ran on a dual core Windows computer.
+
+\code{pick.from.ascii.grids} performs multiple \code{pick.from.ascii.grid} calls.
+File \code{path} and \code{prefix} arguments may be specific to each \code{file} (i.e.
+each may be a character vector), but all interpolation settings will be the same
+for each \code{file}, limiting the flexibility a bit compared to individual
+\code{pick.from.ascii.grid} calls by the user. \code{pick.from.ascii.grids} currently
+processes the files sequentially (i.e. parallelization is limited to the
+\code{pick.from.ascii.grid} calls within this function).
+
+\code{pick.from.saga.grid} is the equivalent to \code{pick.from.ascii.grid} for SAGA grid files.
+It simply converts the SAGA grid \code{file} to a (temporary) ASCII raster file and
+applies \code{pick.from.ascii.grid}.
+
+\code{internal.pick.from.ascii.grid} is an internal 'workhorse' function that
+by itself would be very inefficient for large data sets \code{data}. This function
+is called by \code{pick.from.ascii.grid}, which uses a split-apply-combine strategy
+implemented in the \pkg{plyr} package.
+}
 \value{If \code{cbind=TRUE}, columns with the new, interpolated variables
 are added to the input data.frame \code{data}.
 
 If \code{cbind=FALSE}, a data.frame only containing the new variables
-is returned (possibly coerced to a vector if only one variable is processed).}
-\references{ ~put references to the literature/web site here ~ }
+is returned (possibly coerced to a vector if only one variable is processed).
+}
+\references{Brenning, A. (2008): Statistical geocomputing combining R and SAGA: 
+The example of landslide susceptibility analysis with generalized additive models. 
+In: J. Boehner, T. Blaschke, L. Montanarella (eds.), SAGA - Seconds Out 
+(= Hamburger Beitraege zur Physischen Geographie und Landschaftsoekologie, 19),
+23-32. \url{http://www.environment.uwaterloo.ca/u/brenning/Brenning-2008-RSAGA.pdf}
+}
 \author{Alexander Brenning}
 \note{
 \code{method="krige"} requires the \pkg{gstat} package.
@@ -119,6 +181,19 @@ functions.
 \seealso{ \code{\link{grid.to.xyz}}, %\code{\link{vgm}}, \code{\link{krige}}, 
     \code{\link{read.ascii.grid}}, \code{\link{write.ascii.grid}} }
 \examples{
+\dontrun{
+# assume that 'dem' is an ASCII grid and d a data.frame with variables x and y
+pick.from.ascii.grid(d, "dem")
+# parallel processing on Windows using the doSMP package:
+require(doSMP)
+workers = startWorkers(workerCount = 2) # DualCore processor
+registerDoSMP(workers)
+pick.from.ascii.grid(d, "dem")
+# produces two warning messages when using doSMP
+# typically 25-40% faster than the above on my DualCore notebook
+stopWorkers(workers)
+}
+
 # use the meuse data for some tests:
 require(gstat)
 data(meuse)
