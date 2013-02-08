@@ -17,6 +17,7 @@ centervalue(x)
 % \note{}
 \seealso{\code{\link{focal.function}}, \code{\link{resid.median}} }
 \examples{
-( m <- matrix( round(runif(9,1,10)), ncol=3 ) )
-centervalue(m) }
+ ( m <- matrix( round(runif(9,1,10)), ncol=3 ) )
+ centervalue(m)
+}
 \keyword{utilities}

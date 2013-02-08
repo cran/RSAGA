@@ -707,7 +707,8 @@ rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
     env = rsaga.env(), ...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
-    method = match.arg.ext(method, choices=c("d8","rho8","braunschweig","dinf","mfd"),
+    pp.choices = c("d8","rho8","braunschweig","dinf","mfd", "mtfd")
+    method = match.arg.ext(method, choices=pp.choices,
         numeric=TRUE, ignore.case=TRUE, base=0)
     param = list( ELEVATION=in.dem )
     if (!missing(in.sinkroute)) {
@@ -890,7 +891,7 @@ rsaga.add.grid.values.to.points = function(in.shapefile,
     # check if this is SAGA version dependent:
     in.shapefile = default.file.extension(in.shapefile,".shp")
     out.shapefile = default.file.extension(out.shapefile,".shp")
-    method = match.arg.ext(method, base = 0, ignore = TRUE, numeric = TRUE)
+    method = match.arg.ext(method, base = 0, ignore.case = TRUE, numeric = TRUE)
     param = list(SHAPES = in.shapefile, GRIDS = in.grids,
                 RESULT = out.shapefile, INTERPOL = method)
     rsaga.geoprocessor(lib = "shapes_grid", 
@@ -1147,12 +1148,13 @@ read.sgrd = function( fname, return.header = TRUE, print = 0,
 }
 
 write.sgrd = function( data, file, header = NULL, prec = 7,    
-    georef = "corner", ... )
+    hdr.prec = 10, georef = "corner", ... )
     # 'georef' argument was missing - bug fixed 2008-05-02
+    # hdr.prec argument added - 2013-02-07
 {
     temp.fname = paste(tempfile(),".asc",sep="")
     write.ascii.grid( data = data, file = temp.fname, header = header, 
-                digits = prec, georef = georef )
+                digits = prec, hdr.digits = hdr.prec, georef = georef )
     on.exit(unlink(temp.fname), add = TRUE)
     res = rsaga.esri.to.sgrd( in.grids = temp.fname, out.sgrds = file,
         show.output.on.console = FALSE, intern = FALSE, ... )

@@ -9,7 +9,7 @@
 \alias{write.Rd.grid}
 \title{Read/write ASCII, SAGA and Rd Grid Files}
 \description{These functions provide simple interfaces for reading and
-writing grids from/to ASCII grids and Rd files. Grids are stored in
+writing grids from/to ASCII grids and Rd files. Grids are stored as
 matrices, their headers in lists.}
 \usage{
 read.ascii.grid(file, return.header = TRUE, print = 0, 
@@ -20,9 +20,9 @@ read.sgrd(fname, return.header = TRUE, print = 0,
 read.Rd.grid(fname, return.header = TRUE)
 
 write.ascii.grid(data, file, header = NULL, write.header = TRUE, 
-    digits, dec = ".", georef = "corner")
-write.ascii.grid.header(file, header, georef, dec = ".")
-write.sgrd(data, file, header = NULL, prec = 7,    
+    digits, hdr.digits = 10, dec = ".", georef = "corner")
+write.ascii.grid.header(file, header, georef, dec = ".", hdr.digits = 10)
+write.sgrd(data, file, header = NULL, prec = 7, hdr.prec = 10,
     georef = "corner", ...)
 write.Rd.grid(data, file, header = NULL, write.header = TRUE, 
     compress = TRUE)
@@ -51,7 +51,9 @@ write.Rd.grid(data, file, header = NULL, write.header = TRUE,
         function; see Details}
   \item{write.header}{logical: should the header be written with the grid data?
         (default: \code{TRUE}) }
-  \item{digits}{numeric: if not missing, write grid data rounded to this many digits}
+  \item{digits}{numeric: if not missing, write data rounded to this many decimal places}
+  \item{hdr.digits, hdr.prec}{numeric: write (non-integer) header data with this many decimal places;
+        a value of 9 or higher is recommended for compatibility with SAGA GIS (default: 10)}
   \item{dec}{character (default: \code{"."}): decimal mark used in input 
         or output file}
   \item{georef}{character: specifies whether the output grid should be 
@@ -96,12 +98,19 @@ differ only by \code{cellsize/2}.
 }
 % \references{  }
 \author{Alexander Brenning}
-\note{The \code{read.Rd.grid} and \code{write.Rd.grid} functions use
+\note{\code{read.sgrd} and \code{write.sgrd} import/export grids indirectly by
+creating temporary ASCII grid files (this explains why \code{write.sgrd} has 
+\code{prec} and \code{hdr.prec} arguments). Consider using \code{readGDAL} 
+and \code{writeGDAL} in package \code{rgdal} instead, which are likely more 
+efficient but may require coercion of your gridded data to/from a 
+\code{Spatial...DataFrame-class}.
+
+The \code{read.Rd.grid} and \code{write.Rd.grid} functions use
 the \code{load} and \code{save} commands to store a grid. The variable name
 used is \code{data}, which is either a numeric matrix or a list with components
 \code{data} (the grid data matrix) and \code{header} (the grid header information).}
-\seealso{\code{write.ascii.grid}, \code{write.ascii.grid.header},
-    \code{read.Rd.grid} }
+\seealso{ \code{readGDAL} and \code{writeGDAL} in package \code{rgdal},
+and \code{readAsciiGrid} and \code{writeAsciiGrid} in package \code{maptools} }
 % \examples{ }
 \keyword{spatial}
 \keyword{interface}

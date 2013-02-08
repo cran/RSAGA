@@ -109,7 +109,12 @@ Wilson, J.P., Gallant, J.C. (eds.), 2000:
 Terrain analysis - principles and applications. New York, 
 John Wiley & Sons.}
 \author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
-\note{SAGA_CMD uses zero-based days and months, but this R function uses the
+\note{This module is computationally very intensive (depending on the size
+of the grid and the time resolution, of course). I am currently experimenting
+with a wrapper for \code{rsaga.pisr} that distributes the workload over
+several processors by launching child processes.
+
+SAGA_CMD uses zero-based days and months, but this R function uses the
 standard one-based days and months (e.g. day 1 is the first day of the
 month, month 1 is January) and translates to the SAGA system.
 

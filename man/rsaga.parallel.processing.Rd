@@ -29,7 +29,8 @@ rsaga.parallel.processing(in.dem, in.sinkroute, in.weight,
         Rho 8 (\code{"rho8"} or 1),
         Braunschweiger Reliefmodell (\code{"braunschweig"} or 2),
         Deterministic Infinity (\code{"dinf"} or 3),
-        Multiple Flow Direction (\code{"mfd"} or 4, default).}
+        Multiple Flow Direction (\code{"mfd"} or 4, default), 
+        Multiple Triangular Flow Direction (\code{"mtfd"}, or 5).}
   \item{linear.threshold}{numeric (number of grid cells):
         threshold above which linear flow (i.e. the Deterministic 8 
         algorithm) will be used;  linear flow is disabled 
@@ -80,8 +81,14 @@ on a regular grid. Computers and Geosciences, 17: 413-22.
 Quinn, P.F., Beven, K.J., Chevallier, P., Planchon, O. (1991): The prediction 
 of hillslope flow paths for distributed hydrological modelling using digital 
 terrain models. Hydrological Processes, 5: 59-79.
+
+Multiple Triangular Flow Direction:
+
+Seibert, J., McGlynn, B. (2007): A new triangular multiple flow direction algorithm 
+for computing upslope areas from gridded digital elevation models.
+Water Ressources Research, 43, W04501.
 }
-\author{Alexander Brenning (R interface), Olaf Conrad (SAGA module)}
+\author{Alexander Brenning (R interface), Olaf Conrad (SAGA module), Thomas Grabs (MTFD algorithm)}
 \note{This function uses module \code{Parallel Processing} (version 2.0.7: 
 \code{Catchment Area (Parallel)} from SAGA library \code{ta_hydrology}.
 
@@ -97,7 +104,7 @@ for information on new arguments.}
 # SAGA GIS 2.0.6+:
 rsaga.get.usage("ta_hydrology","Catchment Area (Parallel)")
 # earlier versions of SAGA GIS:
-rsaga.get.usage("ta_hydrology","Parallel Processing")
+#rsaga.get.usage("ta_hydrology","Parallel Processing")
 # execute model with typical settings:
 rsaga.parallel.processing(in.dem = "dem", out.carea = "carea", out.cslope = "cslope")
 # cslope is in radians - convert to degree:
