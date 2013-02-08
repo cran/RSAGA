@@ -17,7 +17,7 @@ rsaga.env = function( workspace=".",
         path = c()
         if (check.libpath) {
             path.pckg = file.path( .libPaths(), "RSAGA" )
-            try( path.pckg <- .path.package("RSAGA"), silent = TRUE )
+            try( path.pckg <- path.package("RSAGA"), silent = TRUE )
             path = c( path, file.path( path.pckg, "saga_vc" ) )
             path = c( path, file.path( path.pckg, "SAGA-GIS" ) )
         }
