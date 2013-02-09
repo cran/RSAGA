@@ -17,7 +17,7 @@ focal.function(in.grid, in.factor.grid, out.grid.prefix, path = NULL,
     is.pixel.radius = TRUE, na.strings = "NA",
     valid.range = c(-Inf, Inf), nodata.values = c(), 
     out.nodata.value, search.mode = c("circle", "square"), 
-    digits = 4, dec = ".", quiet = TRUE, nlines = Inf, 
+    digits = 4, hdr.digits = 10, dec = ".", quiet = TRUE, nlines = Inf, 
     mw.to.vector = FALSE, mw.na.rm = FALSE, ...)
 local.function(...)
 gapply(in.grid, fun, varnames, mw.to.vector=TRUE, mw.na.rm=TRUE, ...)
@@ -64,6 +64,9 @@ gapply(in.grid, fun, varnames, mw.to.vector=TRUE, mw.na.rm=TRUE, ...)
         circular search window, or \code{"square"} for a squared one.}
   \item{digits}{numeric, specifying the number of digits to be used
         for output grid file.}
+  \item{hdr.digits}{numeric, specifying the number of digits to be used
+        for the header of the output grid file (default: 10; 
+        see \code{\link{write.ascii.grid.header}}).}
   \item{dec}{character, specifying the decimal mark to be used for
         input and output.}
   \item{quiet}{If \code{TRUE}, gives some output (\code{"*"}) after

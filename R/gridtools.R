@@ -84,7 +84,10 @@ read.ascii.grid.header = function(file,...)
 }
 
 
-write.ascii.grid.header = function(file, header, georef, dec=".")
+
+
+write.ascii.grid.header = function(file, header, georef, dec=".", hdr.digits=10)
+    # added digits argument - 2013-02-07
 {
     if (missing(georef)) {
         # determine from the 'header' if georeferencing should refer
@@ -97,7 +100,10 @@ write.ascii.grid.header = function(file, header, georef, dec=".")
     } else {
         georef = match.arg(tolower(georef),choices=c("corner","center"))
     }
-    fmt = c( "%-14s%-.0f", "%-14s%-.0f", "%-14s%-f", "%-14s%-f", "%-14s%-f", "%-14s%-f" )
+    # number of decimal places in header now determined by digits argument; 2013-02-07:
+    my.fmt = paste("%-14s%-.",as.character(hdr.digits),"f",sep="")
+    fmt = c("%-14s%-.0f", "%-14s%-.0f", my.fmt, my.fmt, 
+        my.fmt, my.fmt)
     nm = c( "ncols", "nrows", paste(c("xll","yll"),georef,sep=""), "cellsize", "nodata_value" )
     if (is.character(file))  {
         file = default.file.extension(file,".asc")
@@ -113,6 +119,7 @@ write.ascii.grid.header = function(file, header, georef, dec=".")
     }
     invisible()
 }
+
 
 
 read.ascii.grid = function( file, return.header = TRUE, print = 0,
@@ -171,7 +178,7 @@ read.Rd.grid = function( fname, return.header = TRUE )
 
 
 write.ascii.grid = function( data, file, header = NULL, write.header = TRUE, 
-    digits, dec = ".", georef = "corner" ) 
+    digits, hdr.digits = 10, dec = ".", georef = "corner" ) 
 {
     if (is.character(file)) {
         file = default.file.extension(file, ".asc")
@@ -189,8 +196,10 @@ write.ascii.grid = function( data, file, header = NULL, write.header = TRUE,
         }
         data = data$data
     } else stopifnot(is.matrix(data))
-    if (!missing(digits)) data = round(data,digits=digits)
-    if (write.header)  write.ascii.grid.header(con,header,dec=dec,georef=georef)
+    if (!missing(digits)) 
+        data = round(data,digits=digits)
+    if (write.header)  
+        write.ascii.grid.header(con, header, dec=dec, georef=georef, hdr.digits=hdr.digits)
     write.table(data, file=con, append=TRUE, quote=FALSE,
         na=as.character(header$nodata_value),
         row.names=FALSE, col.names=FALSE, dec=dec)
@@ -283,7 +292,7 @@ pick.from.points = function(data, src, pick,
             src = the.src[ !is.na(the.src[,pick[p]]) , ]
             if (nrow(src)==0) next
             krg = krige(
-                form, loc=loc, data=src, newdata=data,
+                form, locations=loc, data=src, newdata=data,
                 model=model, nmax=nmax, nmin=nmin,
                 maxdist=radius ) $ var1.pred
             sel = !is.na(krg)
@@ -654,7 +663,7 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
     na.strings = "NA",
     valid.range=c(-Inf,Inf), nodata.values=c(), out.nodata.value, 
     search.mode=c("circle","square"),
-    digits=4, dec=".", quiet=TRUE, nlines=Inf,
+    digits=4, hdr.digits=10, dec=".", quiet=TRUE, nlines=Inf,
     mw.to.vector = FALSE, mw.na.rm = FALSE, ... )
 {
     if (radius > 0) {
@@ -725,7 +734,7 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
     out.hdr$nodata_value = out.nodata.value
     for (k in 1:N.out) {
         out.files[[k]] = file(out.filenames[k],open="w")
-        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec)
+        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec,hdr.digits=hdr.digits)
     }
     on.exit( for (k in 1:N.out) close(out.files[[k]]), add=TRUE )
     fmt = paste("%.",digits,"f",sep="")
@@ -927,7 +936,7 @@ multi.focal.function = function(
     na.strings = "NA",
     valid.ranges, nodata.values = c(), out.nodata.value, 
     search.mode = c("circle","square"),
-    digits = 4, dec = ".", quiet = TRUE, nlines = Inf,
+    digits = 4, hdr.digits = 10, dec = ".", quiet = TRUE, nlines = Inf,
     mw.to.vector = FALSE, mw.na.rm = FALSE, pass.location = FALSE, 
     ... )
 {
@@ -1024,7 +1033,7 @@ multi.focal.function = function(
     out.hdr$nodata_value = out.nodata.value
     for (k in 1:N.out) {
         out.files[[k]] = file(out.filenames[k],open="w")
-        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec)
+        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec,hdr.digits=hdr.digits)
     }
     on.exit( for (k in 1:N.out) close(out.files[[k]]), add=TRUE )
     
@@ -1328,7 +1337,7 @@ multi.local.function = function(
     fun, in.varnames, out.varnames,
     na.strings = "NA",
     valid.ranges, nodata.values = c(), out.nodata.value, 
-    digits = 4, dec = ".", quiet = TRUE, nlines = Inf,
+    digits = 4, hdr.digits = 10, dec = ".", quiet = TRUE, nlines = Inf,
     na.action = na.exclude, pass.location = FALSE, 
     ... )
 {
@@ -1401,7 +1410,7 @@ multi.local.function = function(
     out.hdr$nodata_value = out.nodata.value
     for (k in 1:N.out) {
         out.files[[k]] = file(out.filenames[k],open="w")
-        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec)
+        write.ascii.grid.header(out.files[[k]],out.hdr,dec=dec,hdr.digits=hdr.digits)
     }
     on.exit( for (k in 1:N.out) close(out.files[[k]]), add=TRUE )
     

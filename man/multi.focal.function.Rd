@@ -19,7 +19,7 @@ multi.local.function(in.grids, in.grid.prefix, out.grid.prefix,
     path = NULL, in.path = path, out.path = path,
     fun, in.varnames, out.varnames, na.strings = "NA",
     valid.ranges, nodata.values = c(), out.nodata.value, 
-    digits = 4, dec = ".", quiet = TRUE, nlines = Inf,
+    digits = 4, hdr.digits = 10, dec = ".", quiet = TRUE, nlines = Inf,
     na.action = na.exclude, pass.location = FALSE, 
     ... )
 multi.focal.function(in.grids, in.grid.prefix, in.factor.grid, 
@@ -28,8 +28,8 @@ multi.focal.function(in.grids, in.grid.prefix, in.factor.grid,
     na.strings = "NA",
     valid.ranges, nodata.values = c(), out.nodata.value, 
     search.mode = c("circle","square"),  digits = 4, 
-    dec = ".", quiet = TRUE, nlines = Inf, mw.to.vector = FALSE, 
-    mw.na.rm = FALSE, pass.location = FALSE, ... )
+    hdr.digits = 10, dec = ".", quiet = TRUE, nlines = Inf, 
+    mw.to.vector = FALSE, mw.na.rm = FALSE, pass.location = FALSE, ... )
 }
 \arguments{
   \item{in.grids}{character vector: file names of input ASCII grids,
@@ -89,6 +89,9 @@ multi.focal.function(in.grids, in.grid.prefix, in.factor.grid,
         circular search window, or \code{"square"} for a squared one.}
   \item{digits}{numeric, specifying the number of digits to be used
         for output grid file.}
+  \item{hdr.digits}{numeric, specifying the number of digits to be used
+        for the header of the output grid file (default: 10; 
+        see \code{\link{write.ascii.grid.header}}).}
   \item{dec}{character, specifying the decimal mark to be used for
         input and output.}
   \item{quiet}{If \code{FALSE}, gives some output (\code{"*"}) after
