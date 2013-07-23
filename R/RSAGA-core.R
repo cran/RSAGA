@@ -2,19 +2,20 @@
 #'
 #' Internal functions that determine OS-specific default paths in which SAGA GIS binaries and modules might be located.
 #' @name rsaga.default.path
-#' @param sysname character: name of the operating system: \code{"Windows"}, \code{"Linux"}, or \code{"Darwin"} (for Mac OSX), determined by default by \code{\link[base]{Sys.info}}
+#' @param sysname character: name of the operating system, determined by default by \code{\link[base]{Sys.info}}: e.g., \code{"Windows"}, \code{"Linux"}, \code{"Darwin"} (for Mac OSX), or \code{"FreeBSD"}
 #' @details These functions are used internally by \code{\link{rsaga.env}}. On Windows systems, the guess made by \code{rsaga.default.path} is \code{"C:/Progra~1/SAGA-GIS"}, and for the modules, it is the \code{"modules"} subfolder of the path with the binaries.
 #' 
-#' On Linux and Max OSX systems, \code{rsaga.default.path} submits a \code{which saga_cmd} call to the operating system to find the binaries, usually in \code{/usr/local/bin} or in \code{/usr/bin}. To find the modules, \code{rsaga.default.modules.path} first checks if a \code{SAGA_MLB} environment variable exists. If not, it will replace the \code{/bin} part (if present) with \code{/lib/saga} or otherwise it just guesses that it's \code{/usr/local/lib/saga}.
+#' On non-Windows systems, \code{rsaga.default.path} submits a \code{which saga_cmd} call to the operating system to find the binaries, usually in \code{/usr/local/bin} or in \code{/usr/bin}. To find the modules, \code{rsaga.default.modules.path} first checks if a \code{SAGA_MLB} environment variable exists. If not, it will replace the \code{/bin} part (if present) with \code{/lib/saga} or otherwise it just guesses that it's \code{/usr/local/lib/saga}.
 #' @seealso \code{\link{rsaga.env}}
 #' @export
 rsaga.default.path = function(sysname = Sys.info()["sysname"]) {
     if (sysname == "Windows") {
         res = "C:/Progra~1/SAGA-GIS"
-    } else if ((sysname == "Linux") | (sysname == "Darwin")) {
+    } else { ### tested with: ((sysname == "Linux") | (sysname == "Darwin") | (sysname == "FreeBSD"))
         res = sub('/saga_cmd','',system2('which',args='saga_cmd',stdout=TRUE))
-    } else stop("operating system '", sysname, "' not recognized or not supported\n",
-            "try specifying SAGA GIS path and module path manually")
+    }
+    ###} else stop("operating system '", sysname, "' not recognized or not supported\n",
+    ###        "try specifying SAGA GIS path and module path manually")
     return(res)
 }
 
@@ -27,7 +28,7 @@ rsaga.default.modules.path = function(sysname = Sys.info()["sysname"],
 {
     if (sysname == "Windows") {
         modules = file.path(saga.path,"modules")
-    } else if ((sysname == "Linux") | (sysname == "Darwin")) {
+    } else { ### tested with: ((sysname == "Linux") | (sysname == "Darwin") | (sysname == "FreeBSD"))
         modules = Sys.getenv("SAGA_MLB")[[1]]
         if (modules == "") {
             # have a backup path in case SAGA_MLB is not set/empty
@@ -35,8 +36,9 @@ rsaga.default.modules.path = function(sysname = Sys.info()["sysname"],
                 modules = file.path( substr(saga.path, 1, nchar(saga.path)-4), "lib", "saga" )
             } else modules = "usr/local/lib/saga"
         }
-    } else stop("operating system '", sysname, "' not recognized or not supported\n",
-            "try specifying SAGA GIS path and module path manually")
+    }
+    ###} else stop("operating system '", sysname, "' not recognized or not supported\n",
+    ###        "try specifying SAGA GIS path and module path manually")
     return(modules)
 }
 
@@ -58,6 +60,7 @@ rsaga.default.modules.path = function(sysname = Sys.info()["sysname"],
 #' @param check.PATH if \code{TRUE} (default on Windows), next look for SAGA GIS in all the paths in the \code{PATH} environment variable; defaults to \code{FALSE} on non-Windows OS
 #' @param check.os.default if \code{TRUE}, look for SAGA GIS in the folder specified by \code{os.default.path}.
 #' @param os.default.path on Windows, \code{C:/Progra~1/SAGA-GIS}; on unix, an attempt is made to locate \code{saga_cmd}
+#' @param lib.prefix character string: a possible (platform-dependent) prefix for SAGA GIS library names; if missing (recommended), a call to \code{\link{rsaga.lib.prefix}} tries to determine the correct prefix, e.g. \code{""} on Windows systems and \code{"lib"} on non-Windows systems with SAGA GIS pre-2.1.0. Try specifying \code{""} or \code{"lib"} manually if this causes problems, and contact the package maintainer if the detection mechanism fails on your system (indicate your \code{Sys.info()["sysname"]} and your SAGA GIS version)
 #' @details IMPORTANT: Unlike R functions such as \code{\link{options}},  which changes and saves settings somewhere in a global variable, \code{\link{rsaga.env}} does not actually 'save' any settings, it simply creates a list that can (and has to) be passed to other \code{rsaga.*} functions. See example below.
 #' 
 #' I strongly recommend to install SAGA GIS in \code{"C:/Program Files/SAGA-GIS"}  in the case of English-language Windows platforms (the equivalent non-English installation folder in the case of non-English Windows versions seems to work as well). If this is the only SAGA GIS copy on the computer and you do \emph{not} define a Windows environment variable \code{SAGA}, then RSAGA should normally be able to find your SAGA GIS installation in this folder.
@@ -100,7 +103,8 @@ rsaga.env = function( workspace=".",
     check.SAGA = TRUE, 
     check.PATH = Sys.info()["sysname"]=="Windows",
     check.os.default = TRUE,
-    os.default.path = rsaga.default.path() )
+    os.default.path = rsaga.default.path(),
+    lib.prefix )
     #os.default.path = ifelse(.Platform$OS.type=="windows",
     #    "C:/Progra~1/SAGA-GIS",
     #    sub('/saga_cmd','',system2('which',args='saga_cmd',stdout=TRUE))) )
@@ -166,7 +170,8 @@ rsaga.env = function( workspace=".",
 
         return(path)
     }
-
+    
+    
     # Default RSAGA workspace is the current working directory of R:
     if (workspace == "") workspace = "."
     
@@ -256,9 +261,48 @@ rsaga.env = function( workspace=".",
             "Use SAGA GIS 2.1.0+ for multicore geoprocessing.")
         env$cores = NA
     }
+
+    if (missing(lib.prefix))
+        lib.prefix = rsaga.lib.prefix(env = env)
+    env$lib.prefix = lib.prefix
     
     return( env )
 }
+
+
+#' Determine prefix for SAGA GIS library names
+#'
+#' Internal function that determines the possible prefix for SAGA GIS library names - relevant for non-Windows SAGA GIS pre-2.1.0.
+#' 
+#' @name rsaga.lib.prefix
+#' @param env list, setting up a SAGA geoprocessing environment as created by \code{\link{rsaga.env}}.
+#' @details Some non-Windows versions of \code{saga_cmd} require library names with a \code{"lib"} prefix, e.g. \code{libio_grid} instead of \code{io_grid}. This function, which is called by \code{\link{rsaga.env}} tries to guess this behaviour based on the operating system and SAGA GIS version.
+#' @return A character string, either \code{""} or \code{"lib"}.
+#' @seealso \code{\link{rsaga.env}}
+#' @examples
+#' \dontrun{
+#' env = rsaga.env()
+#' # obtained by a call to rsaga.lib.prefix:
+#' env$lib.prefix
+#'
+#' # more explicitly:
+#' rsaga.lib.prefix(env=env)
+#' }
+#' @keywords spatial interface
+#' @export
+rsaga.lib.prefix = function(env) {
+    lib.prefix = "lib"
+    if ((Sys.info()["sysname"] == "Windows")) {
+        lib.prefix = ""
+    } else if ((Sys.info()["sysname"] == "Darwin")) {
+        lib.prefix = ""
+    } else if (!is.na(env$version)) {
+        if (substr(env$version,1,4) == "2.1.")
+            lib.prefix = ""
+    }
+    return(lib.prefix)
+}
+
 
 
 
@@ -422,8 +466,9 @@ rsaga.get.libraries = function(path = rsaga.env()$modules, dll)
         if (Sys.info()["sysname"] == "Darwin") dll = ".dylib"
     }
     dllnames = dir(path,paste("^.*\\",dll,"$",sep=""))
-    if (Sys.info()["sysname"] %in% c("Linux","Darwin"))
-        dllnames = substr(dllnames, 4, nchar(dllnames)) # remove the "lib"
+    if (Sys.info()["sysname"] != "Windows") ### %in% c("Linux","Darwin","FreeBSD"))
+        if (all(substr(dllnames,1,3) == "lib"))
+            dllnames = substr(dllnames, 4, nchar(dllnames)) # remove the "lib"
     return( gsub(dll,"",dllnames,fixed=TRUE ) )
 }
 
@@ -434,8 +479,10 @@ rsaga.get.libraries = function(path = rsaga.env()$modules, dll)
 rsaga.get.lib.modules = function(lib, env=rsaga.env(), interactive=FALSE)
 {
     res = NULL
-    
-    if ( lib == "opencv" & (is.na(env$version) | (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")) ) {
+
+    # changed by Rainer Hurling, 2013-07-23:
+    ###if ( lib == "opencv" & (is.na(env$version) | (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")) ) {
+    if ( lib == "opencv" & env$version %in% c(NA,"2.0.4","2.0.5","2.0.6") ) {
         warning("skipping library 'opencv' because it produces an error\n",
             "  when requesting its module listing in SAGA version 2.0.4 - 2.0.6)")
         # return an empty data.frame of the same format as in the successful situation:
@@ -841,10 +888,12 @@ rsaga.geoprocessor = function(
         }
     }
     
-    # Library - in the case of unix systems, it must be preceded by 'lib':
-    if (!is.null(lib))
-        command = paste( command, " ", 
-            ifelse(Sys.info()["sysname"] == "Linux", "lib", ""), lib, sep = "")
+    # Library - in the case of unix systems, it must be preceded by 'lib' - but not in the case of Mac OSX:
+    ###add.lib = (Sys.info()["sysname"] != "Windows") & (Sys.info()["sysname"] != "Darwin")
+    if (!is.null(lib)) {
+        if (is.null(env$lib.prefix)) env$lib.prefix = ""
+        command = paste( command, " ", env$lib.prefix, lib, sep = "")
+    }
     
     if (!is.null(lib) & !is.null(module)) {
         if (check.module.exists) {

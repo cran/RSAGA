@@ -8,7 +8,7 @@
     check.libpath = TRUE, check.SAGA = TRUE,
     check.PATH = Sys.info()["sysname"] == "Windows",
     check.os.default = TRUE,
-    os.default.path = rsaga.default.path())
+    os.default.path = rsaga.default.path(), lib.prefix)
 }
 \arguments{
   \item{workspace}{path of the working directory for SAGA;
@@ -72,6 +72,18 @@
   \item{os.default.path}{on Windows,
   \code{C:/Progra~1/SAGA-GIS}; on unix, an attempt is made
   to locate \code{saga_cmd}}
+
+  \item{lib.prefix}{character string: a possible
+  (platform-dependent) prefix for SAGA GIS library names;
+  if missing (recommended), a call to
+  \code{\link{rsaga.lib.prefix}} tries to determine the
+  correct prefix, e.g. \code{""} on Windows systems and
+  \code{"lib"} on non-Windows systems with SAGA GIS
+  pre-2.1.0. Try specifying \code{""} or \code{"lib"}
+  manually if this causes problems, and contact the package
+  maintainer if the detection mechanism fails on your
+  system (indicate your \code{Sys.info()["sysname"]} and
+  your SAGA GIS version)}
 }
 \value{
   A list with components \code{workspace}, \code{cmd},

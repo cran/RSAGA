@@ -1,6 +1,6 @@
-34daa6c2a11a316d0688a940b5348124 *DESCRIPTION
-7292d67b704bf3ebda05ccfaba389b88 *NAMESPACE
-66be5a171515b901b60854cc010136eb *R/RSAGA-core.R
+a88986a7c8c820c88779a8ff8665fac4 *DESCRIPTION
+a680fbd92c9de77d4701d22169346666 *NAMESPACE
+2890983d31b94d60e58e040cb211ee80 *R/RSAGA-core.R
 04f79a0eff48f5879fa4c28b738fcf61 *R/RSAGA-modules.R
 b8e2b5207358be50c23188b86ee0c448 *R/RSAGA-package.R
 5c996ceb953b6bc3faa6606956c10632 *R/RSAGA-utils.R
@@ -15,15 +15,15 @@ f92462116e7fb418b716487afde817b6 *man/focal.function.Rd
 b047c0100c7b111b544b315ca687a97f *man/match.arg.ext.Rd
 e196e8bf083e01c55d71cf27619c079b *man/multi.focal.function.Rd
 75a3fdfa7a99a0d8173af1e867ca326f *man/pick.from.points.Rd
-3107a0776c1c79e06ce05527fdb63970 *man/read.ascii.grid.Rd
+7d3977afb83bde06c626810333adfb28 *man/read.ascii.grid.Rd
 c91867e8b5e39d34115bc3fdb0ff7471 *man/relative.position.Rd
 67f9a2a5c1f02800f1e9809052a431ff *man/resid.median.Rd
 6cd39563ff220a8a51fdb150f4d5ec4c *man/rsaga.add.grid.values.to.points.Rd
 339760f564cda560384627fdf3557409 *man/rsaga.close.gaps.Rd
 8c8e9ccfda8addf5e2940d811c1bee5b *man/rsaga.contour.Rd
 050def796d7f98f92a27ad2cb11ee34b *man/rsaga.copy.sgrd.Rd
-efd8a3b1e8c83c5337f41a4533c1bf4e *man/rsaga.default.path.Rd
-e40b66a66c08e5161b421fbb94db737d *man/rsaga.env.Rd
+655d2d40d13a9756a671e6880f3b69b2 *man/rsaga.default.path.Rd
+395ecfc24cf5b78b6dead28a7df672ec *man/rsaga.env.Rd
 7a092d07d5a6efa9ffb0c8c4bafe7136 *man/rsaga.esri.to.sgrd.Rd
 bd04454d4e5cd760ba265e8943899cbb *man/rsaga.esri.wrapper.Rd
 afe97b6b10aaa9c3b735376d8329f06f *man/rsaga.fill.sinks.Rd
@@ -40,6 +40,7 @@ a0477a87108cd2b164da84883d9e9754 *man/rsaga.html.help.Rd
 5d9f91b00a3456d31af79cfcae7ec953 *man/rsaga.import.gdal.Rd
 583e1c066d736cb2b745c56d18cbf1c1 *man/rsaga.insolation.Rd
 e8947daf4c6069d8a7c296434d540b51 *man/rsaga.inverse.distance.Rd
+24a8d9d4e9b42dd4f6230cd75377f5db *man/rsaga.lib.prefix.Rd
 df39d348a1673a689b3e1db152bb80c6 *man/rsaga.local.morphometry.Rd
 8b0ba04591ec7b4148386dad196ce31e *man/rsaga.parallel.processing.Rd
 f5e7e37aec50fb45c712ca374d6de397 *man/rsaga.pisr.Rd

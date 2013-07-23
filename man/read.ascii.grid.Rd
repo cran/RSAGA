@@ -1,11 +1,11 @@
 \name{read.ascii.grid}
+\alias{read.Rd.grid}
 \alias{read.ascii.grid}
 \alias{read.ascii.grid.header}
-\alias{read.Rd.grid}
 \alias{read.sgrd}
+\alias{write.Rd.grid}
 \alias{write.ascii.grid}
 \alias{write.ascii.grid.header}
-\alias{write.Rd.grid}
 \alias{write.sgrd}
 \title{Read/write ASCII, SAGA and Rd Grid Files}
 \usage{
