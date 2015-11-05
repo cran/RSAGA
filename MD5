@@ -1,9 +1,9 @@
-354ca2d61f75621981a4318b091553d7 *DESCRIPTION
+6f4205ba352ef4c02d2c74ecd6bc4b9b *DESCRIPTION
 bb3505f5c0c35bd873e77f88ba71d139 *LICENSE
-7ce2084390ce06852c43560f975384a5 *NAMESPACE
-9242073597d4894b2c7b9d6e89cd2161 *R/RSAGA-core.R
-852b9160e2b39497c039ef977e36ad06 *R/RSAGA-modules.R
-92907dde96a3bdf3e3a807cef82d1424 *R/RSAGA-package.R
+d22d58282153bbb8093bb9561bc6ad4b *NAMESPACE
+87d9b681277d7ce2af32376c45efe70f *R/RSAGA-core.R
+0bbda897d71b45d4993310f8691557b4 *R/RSAGA-modules.R
+5f9306d4cbd03fa65a584cf3b1388aa8 *R/RSAGA-package.R
 5c996ceb953b6bc3faa6606956c10632 *R/RSAGA-utils.R
 86adcf9b8806b043a97e46602eb21ca3 *R/gridtools.R
 cace73074217c3fb1fcee2e966065dbb *R/landslides.R
@@ -12,8 +12,8 @@ cace73074217c3fb1fcee2e966065dbb *R/landslides.R
 17555db2378d40f85d64f6a72305fdae *inst/CITATION
 74f5b5ad3c154a11ba6de36a8e5750f8 *inst/doc/RSAGA-landslides.R
 eea5332ec305495b5eac6c662c7ba563 *inst/doc/RSAGA-landslides.Rmd
-7863e5fb5aeae6ff2ae51b640bfb9ee7 *inst/doc/RSAGA-landslides.pdf
-8ccf741a64e0cda44b9998e7a0800ffc *man/RSAGA-package.Rd
+e2be5d2be56875d336f07c21c30cf85a *inst/doc/RSAGA-landslides.pdf
+b611ea67c2103ff5d58e61c71dc0e754 *man/RSAGA-package.Rd
 05280ced723e4a8153b959257a43ae5e *man/centervalue.Rd
 b79437ecd01467d90a0fcc52559bb70e *man/create.variable.name.Rd
 11d5b09414087591ec0fc135338ef754 *man/focal.function.Rd
@@ -52,6 +52,7 @@ e4a627e167e39f4ff06606aeccef222e *man/rsaga.insolation.Rd
 7a8c8f1a36b4e1d255a4bc14e1eed116 *man/rsaga.local.morphometry.Rd
 c58a9b55c533771f876fa46ad7b9df40 *man/rsaga.parallel.processing.Rd
 ec053a0859c9df0889ca3a902b8f5914 *man/rsaga.pisr.Rd
+f89a0d8ef6981c8c26d36dbf1f96c751 *man/rsaga.pisr2.Rd
 976a1457a0509c849545a02b8ea0e6e4 *man/rsaga.sgrd.to.esri.Rd
 00dfe23e7b72dca27bfb69dda5f9c620 *man/rsaga.sink.removal.Rd
 cac54be9b3ba4f739ecd61bda692fc5f *man/rsaga.sink.route.Rd
