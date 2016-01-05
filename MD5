@@ -1,9 +1,9 @@
-6f4205ba352ef4c02d2c74ecd6bc4b9b *DESCRIPTION
+7611899cf3ce74b25efcdd3fe2b12fff *DESCRIPTION
 bb3505f5c0c35bd873e77f88ba71d139 *LICENSE
 d22d58282153bbb8093bb9561bc6ad4b *NAMESPACE
-87d9b681277d7ce2af32376c45efe70f *R/RSAGA-core.R
-0bbda897d71b45d4993310f8691557b4 *R/RSAGA-modules.R
-5f9306d4cbd03fa65a584cf3b1388aa8 *R/RSAGA-package.R
+84e4edd4bee291a11e8c074e092550ad *R/RSAGA-core.R
+7cd9517dafacf9578b2226607ed6d4c9 *R/RSAGA-modules.R
+607ce9ec85fdd0ab1138968cfc66abf3 *R/RSAGA-package.R
 5c996ceb953b6bc3faa6606956c10632 *R/RSAGA-utils.R
 86adcf9b8806b043a97e46602eb21ca3 *R/gridtools.R
 cace73074217c3fb1fcee2e966065dbb *R/landslides.R
@@ -12,8 +12,8 @@ cace73074217c3fb1fcee2e966065dbb *R/landslides.R
 17555db2378d40f85d64f6a72305fdae *inst/CITATION
 74f5b5ad3c154a11ba6de36a8e5750f8 *inst/doc/RSAGA-landslides.R
 eea5332ec305495b5eac6c662c7ba563 *inst/doc/RSAGA-landslides.Rmd
-e2be5d2be56875d336f07c21c30cf85a *inst/doc/RSAGA-landslides.pdf
-b611ea67c2103ff5d58e61c71dc0e754 *man/RSAGA-package.Rd
+a3e619d3af5e66a989c4124b4b936c4d *inst/doc/RSAGA-landslides.pdf
+56b4783dc4d2544f0faa91e71214e79d *man/RSAGA-package.Rd
 05280ced723e4a8153b959257a43ae5e *man/centervalue.Rd
 b79437ecd01467d90a0fcc52559bb70e *man/create.variable.name.Rd
 11d5b09414087591ec0fc135338ef754 *man/focal.function.Rd
@@ -45,7 +45,7 @@ c8a1bbaee468f489beff851b7d686507 *man/rsaga.get.usage.Rd
 3deecac3562cad6462c0c3841faf91f7 *man/rsaga.grid.to.points.Rd
 81a80ffe25b95ace25b8b43d1e903123 *man/rsaga.hillshade.Rd
 6cf9c8d6ccadc74661ddec5dc73afc1b *man/rsaga.html.help.Rd
-178cb424764bbf6b79ff5498f7d9b0bb *man/rsaga.import.gdal.Rd
+742a415783d2ccb50a186e7e28cd3409 *man/rsaga.import.gdal.Rd
 e4a627e167e39f4ff06606aeccef222e *man/rsaga.insolation.Rd
 9b9d02ea8116db37d77998af8a40962d *man/rsaga.inverse.distance.Rd
 4bd28093e1333ec4b22469ac1336d587 *man/rsaga.lib.prefix.Rd
