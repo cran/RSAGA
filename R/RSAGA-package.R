@@ -23,13 +23,13 @@
 #' values at point locations from a grid using kriging 
 #' or nearest neighbour interpolation.
 #' 
-#' RSAGA requires SAGA GIS (versions 2.0.4 - 2.2.3) 
+#' RSAGA requires SAGA GIS (versions 2.3.1 LTS - 6.2.0) 
 #' are currently supported) and its user-contributed 
 #' modules to be available on your computer. These 
 #' can be downloaded under GPL from
-#' \url{http://sourceforge.net/projects/saga-gis/}.
+#' <http://sourceforge.net/projects/saga-gis/>.
 #' Please check the help page for 
-#' \code{\link{rsaga.env}} to make sure that RSAGA 
+#' [rsaga.env()] to make sure that RSAGA 
 #' can find your local installation of SAGA. You may 
 #' need to 'tell' RSAGA where to find SAGA GIS.
 #' 
@@ -49,9 +49,9 @@
 #'  
 #'  Conrad, O., Bechtel, M., Bock, M., Dietrich, H., Fischer, E., Gerlitz, L., Wichmann,
 #'  V., & Boehner, J. (2015). System for Automated Geoscientific Analyses (SAGA) v. 2.1.4.
-#'  \emph{Geoscientific Model Development}, 8, 1991-2007
+#'  *Geoscientific Model Development*, 8, 1991-2007
 #'
-#' @author Alexander Brenning and Donovan Bangs
+#' @author Alexander Brenning, Donovan Bangs and Marc Becker
 #' @docType package
 #' @name RSAGA-package
 #' @aliases RSAGA-package

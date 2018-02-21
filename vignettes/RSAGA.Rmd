@@ -1,24 +1,26 @@
 ---
 title: "Introduction to Terrain Analysis with RSAGA: Landslide Susceptibility Modeling"
-author: "Alexander Brenning & Donovan Bangs"
-date: "August 20th, 2015"
+author: "Alexander Brenning, Donovan Bangs and Marc Becker"
+date: "01 February 2018"
 output:
-    pdf_document:
+    rmarkdown::html_vignette:
       fig_caption: yes
 vignette: >
-  %\VignetteEncoding{UTF-8}
   %\VignetteIndexEntry{Introduction to Terrain Analysis with RSAGA: Landslide Susceptibility Modeling}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
 ```{r, echo = FALSE, results = "hide", message = F, warning = F}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
-## Initialize geoprocessing environment
-library(RSAGA)
-data("landslides")
-```
-```{r, echo = FALSE, results = "hide", message = F, warning = F, eval = FALSE}
-env <- rsaga.env(path = "C:/SAGA-GIS/saga_2.2.0_x64")
-write.sgrd(data = dem, file = "dem", header = dem$header)
+library(knitr)
 ```
 
 ## Introduction
@@ -27,9 +29,9 @@ RSAGA is a package providing access to geoprocessing and terrain analysis functi
 This vignette illustrates the use of RSAGA for terrain analysis following an application modeling landslide susceptibility in the tropical Andes (Muenchow _et al._, 2012). The presence or absence of landslide initiation at 1535 sampling points in the natural parts of the perhumid _Reserva Biologica San Francisco_ (RBSF) area are entered as the response to terrain variables in a generalized additive model (GAM). From a provided digital elevation model (DEM; figure 1) (Jordan _et al._, 2005; Ungerechts, L. 2010)^[Available online (http://www.tropicalmountainforest.org/data_pre.do?citid=901) from DFG-FOR816dw]
 , RSAGA is used to calculate the relevant terrain indices, transform grid data, and extract values to a data frame for statistical modeling. The GAM is demonstrated using package _gam_ (Hastie, 2015), and model predictions applied to the collection of terrain grids using RSAGA grid tools.
 
-![Hillshaded _RBSF_ DEM](dem.png)
-
-\newpage
+```{r  out.width = "80%", echo=FALSE, fig.cap="Figure 1: Hillshade RBSF DEM"}
+include_graphics('dem.png') 
+```
 
 ## The RSAGA Package
 RSAGA can be considered a collection of geocomputing functions in three general components:
@@ -41,20 +43,14 @@ RSAGA can be considered a collection of geocomputing functions in three general 
 1. **RSAGA grid tools** provides additional access to geocomputing and data manipulation. These include moving window and local grid functions, data import and export, and "picking" functions to extract grid and shapefile data to an R data frame.
 
 ## Initializing the RSAGA Geoprocessing Environment
-Running the geoprocessing functions requires that SAGA is installed and can be found by RSAGA. Multiple versions of SAGA may be accessible, and the environment changed through the `rsaga.env()` function. To check which version of SAGA is used by default with RSAGA, print the environment:
-
-```{r, collapse = TRUE}
-rsaga.env()
-```
-
-In this case, an older version of SAGA (`$version`) is located on the default path. To change the environment to an updated version of SAGA, point the environment to the directory containing `saga_cmd.exe` of the desired SAGA version, _e.g._:
+Running the geoprocessing functions requires that SAGA is installed and can be found by RSAGA. The `rsaga.env()` function creates a list with system-dependent information on SAGA path, module path and data directory. The function should be called with the path to the SAGA executable:
 
 ```{r, collapse=TRUE, eval = FALSE}
-env <- rsaga.env(path = "C:/SAGA-GIS/saga_2.2.0_x64")
-env$version
+env <- rsaga.env()
 ```
+The function tries to find SAGA in several default paths if no path parameter is provided.
 
-The object `env` may now be used to direct RSAGA functions to use this specific version of SAGA. Version `2.2.0` will be used for this tutorial by specifying `env = env` in functions that use this SAGA environment.
+The object `env` may now be used to direct RSAGA functions to use this specific version of SAGA. Version `6.2.0` will be used for this tutorial by specifying `env = env` in functions that use this SAGA environment.
 
 ## RSAGA Function Calls
 RSAGA interfaces with the command line interpreter of SAGA-GIS. In most cases, `rsaga.*` functions take specified arguments and translate these to a system call that uses SAGA directly. For instance, slope may be calculated from a DEM by the SAGA command line call:
@@ -147,8 +143,6 @@ rsaga.slope(in.dem = "C:/InData/dem", out.slope = "C:/OutData/slope", env = env)
 
 If no path is specified, RSAGA will read and write grids to the current R working directory.
 
-\newpage
-
 ## RSAGA Terrain Analysis
 With the DEM now as a SAGA grid, RSAGA may then be used to process terrain and morphometric variables to be used, for example, in this landslide analysis. Slopes and curvatures are calculated by the Zevenbergen & Thorne (1987) method (figure 2):
 
@@ -195,9 +189,11 @@ landslides <- pick.from.saga.grid(landslides, "carea", varname = "carea", env = 
                                   X.name = "x", Y.name = "y")
 ```
 
-![Terrain variables a) slope; b) plan curvature; c) profile curvature; d) logarithm of contributing area](terrain_variables.png)
+```{r  out.width = "80%", echo=FALSE, fig.cap="Figure 2: Terrain variables a) slope; b) plan curvature; c) profile curvature; d) logarithm of contributing area"}
+include_graphics("terrain_variables.png") 
+```
 
-\newpage
+
 ## Generalized Additive Modeling with Grids
 RSAGA provides functionality for applying focal and local functions to grids, such that model predictions may be mapped to the same grid space as the input data.
 
@@ -245,9 +241,10 @@ multi.local.function(in.grids = c("slope", "cprof", "cplan", "carea"),
     
 The result is an ASCII grid named `lsl_pred` (figure 3), the argument provided to `out.varnames`. This grid is the predict method of the GAM applied to each grid cell considering those provided by `in.grids`.
 
-\newpage
+```{r  out.width = "80%", echo=FALSE, fig.cap="Figure 3: Landslide probability prediction grid"}
+include_graphics("lslpred.png") 
+```
 
-![Landslide probability prediction grid](lslpred.png)
 
 ## Summary
 We hope that this tutorial has provided you with a working familiarity with the RSAGA package. RSAGA can be used to call SAGA command line functions through the `rsaga.geoprocessor`. Commonly-used SAGA functions can be called through convenient `rsaga.`* functions, with documentation and usage available in R through `help()`.
@@ -257,17 +254,16 @@ Grids may be transformed by applying functions through `rsaga.grid.calculus`. Gr
 Through this functionality, SAGA terrain analysis can be coupled with statistical computing, all within R. 
 
 ## A Note on Versions
-As SAGA-GIS is regularly updated, we strive to keep RSAGA functional with as many SAGA versions as practicable. However, the release version of RSAGA on CRAN may not be compatible with all versions of SAGA-GIS. Currently, RSAGA supports SAGA versions 2.0.4 and higher.
+As SAGA-GIS is regularly updated, we strive to keep RSAGA functional with as many SAGA versions as practicable. However, the release version of RSAGA on CRAN may not be compatible with all versions of SAGA-GIS. Currently, RSAGA supports SAGA versions 2.3.1 LTS to 6.2.0. SAGA-GIS versions that were released after this package could work as long as no major changes were made to SAGA-GIS. Older version down to 2.0.4 might still work but are not supported by all functions. 
 
-When a new version of SAGA-GIS is released, RSAGA on CRAN may not be initially compatible with this release. Development and pre-release versions of RSAGA may be downloaded from the project Github page at: <http://github.com/debangs/RSAGA>
+When a new version of SAGA-GIS is released, RSAGA on CRAN may not be initially compatible with this release. Development and pre-release versions of RSAGA may be downloaded from the project Github page at: <http://github.com/be-marc/RSAGA>
 
 Please be aware that some modules and calculations may change or be deprecated between SAGA versions. Where practical, warnings are issued to alert users to changes in modules. The `rsaga.get.usage` function may be used to access SAGA command-line help to explore any changes between versions.
 
-\newpage
 ## References
 Conrad, O., Bechtel, M., Bock, M., Dietrich, H., Fischer, E., Gerlitz, L., Wichmann, V., & Bohner, J. (2015). System for Automated Geoscientific Analyses (SAGA) v. 2.1.4. _Geoscientific Model Development_, 8, 1991-2007
 
-Hastie, T. (2015). gam: Generalized Additive Models. R package version 1.12. http://CRAN.R-project.org/package=gam
+Hastie, T. (2015). gam: Generalized Additive Models. R package version 1.12. https://CRAN.R-project.org/package=gam
 
 Jordan, E., Ungerechts, L.; Caceres, B.; Penafiel, A. and Francou, B. (2005). Estimation by photogrammetry of the glacier recession on the Cotopaxi Volcano (Ecuador) between 1956 and 1997. _Hydrological Sciences_, 50, 949-961
 

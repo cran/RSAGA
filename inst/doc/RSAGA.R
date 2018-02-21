@@ -1,19 +1,18 @@
+## ----setup, include = FALSE----------------------------------------------
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
 ## ---- echo = FALSE, results = "hide", message = F, warning = F-----------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
-## Initialize geoprocessing environment
-library(RSAGA)
-data("landslides")
+library(knitr)
 
-## ---- echo = FALSE, results = "hide", message = F, warning = F, eval = FALSE----
-#  env <- rsaga.env(path = "C:/SAGA-GIS/saga_2.2.0_x64")
-#  write.sgrd(data = dem, file = "dem", header = dem$header)
-
-## ---- collapse = TRUE----------------------------------------------------
-rsaga.env()
+## ----out.width = "80%", echo=FALSE, fig.cap="Figure 1: Hillshade RBSF DEM"----
+include_graphics('dem.png') 
 
 ## ---- collapse=TRUE, eval = FALSE----------------------------------------
-#  env <- rsaga.env(path = "C:/SAGA-GIS/saga_2.2.0_x64")
-#  env$version
+#  env <- rsaga.env()
 
 ## ---- results = "hide", eval = FALSE-------------------------------------
 #  rsaga.geoprocessor(lib = "ta_morphometry", module = "Slope, Aspect, Curvature",
@@ -87,6 +86,9 @@ data(landslides)
 #  landslides <- pick.from.saga.grid(landslides, "carea", varname = "carea", env = env,
 #                                    X.name = "x", Y.name = "y")
 
+## ----out.width = "80%", echo=FALSE, fig.cap="Figure 2: Terrain variables a) slope; b) plan curvature; c) profile curvature; d) logarithm of contributing area"----
+include_graphics("terrain_variables.png") 
+
 ## ---- results = "hide", eval = FALSE-------------------------------------
 #  rsaga.sgrd.to.esri(in.sgrds = c("slope", "cprof", "cplan", "carea"),
 #                     out.grids = c("slope", "cprof", "cplan", "carea"),
@@ -113,4 +115,7 @@ data(landslides)
 #     control.predict = list(type = "response"),
 #     trafo = my.trafo,
 #     fit = fit)
+
+## ----out.width = "80%", echo=FALSE, fig.cap="Figure 3: Landslide probability prediction grid"----
+include_graphics("lslpred.png") 
 

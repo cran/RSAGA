@@ -1,27 +1,42 @@
 Package: RSAGA
 Type: Package
-Title: SAGA Geoprocessing and Terrain Analysis in R
-Version: 0.94-5
-Date: 2015-12-23
-Author: Alexander Brenning and Donovan Bangs
-Maintainer: Alexander Brenning <alexander.brenning@uni-jena.de>
-Description: Provides access to geocomputing and terrain analysis
-    functions of the geographical information system (GIS) 'SAGA' (System for
-    Automated Geoscientific Analyses) from within R by running the command 
-    line version of SAGA. This package furthermore provides several R functions
-    for handling ASCII grids, including a flexible framework for applying local
-    functions (including predict methods of fitted models) and focal functions to
-    multiple grids. SAGA GIS is available under GPLv2 / LGPLv2 licence from
-    http://sourceforge.net/projects/saga-gis/.
+Title: SAGA Geoprocessing and Terrain Analysis
+Version: 1.0.0
+Date: 2018-02-01
+Authors@R: c(
+    person("Alexander", "Brenning",
+    email = "alexander.brenning@uni-jena.de", 
+    role = c("aut", "cre"),
+    comment = c(ORCID = '0000-0001-6640-679X')),
+    person("Donovan", "Bangs",
+    role = "aut"),
+    person("Marc", "Becker",
+    role = "aut")
+    )
+Description: Provides access to geocomputing and terrain analysis functions
+    of the geographical information system (GIS) 'SAGA' (System for Automated
+    Geoscientific Analyses) from within R by running the command line version of
+    SAGA. This package furthermore provides several R functions for handling ASCII
+    grids, including a flexible framework for applying local functions (including
+    predict methods of fitted models) and focal functions to multiple grids. SAGA
+    GIS is available under GPLv2 / LGPLv2 licence from <http://sourceforge.net/
+    projects/saga-gis/>.
 License: GPL-2 | file LICENSE
-SystemRequirements: SAGA GIS (2.0.4 - 2.2.3)
+Encoding: UTF-8
+SystemRequirements: SAGA GIS (2.3.1 LTS - 6.2.0)
 Depends: R (>= 2.10), gstat, shapefiles, plyr
-Suggests: knitr
+Imports: stats, utils, rgdal, sf
+Suggests: knitr, rmarkdown
 LazyLoad: yes
 Collate: 'gridtools.R' 'RSAGA-core.R' 'RSAGA-modules.R' 'RSAGA-utils.R'
         'RSAGA-package.R' 'landslides.R'
 VignetteBuilder: knitr
+RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2015-12-23 13:17:11 UTC; Donovan
+Packaged: 2018-02-21 07:40:36 UTC; marc
+Author: Alexander Brenning [aut, cre] (<https://orcid.org/0000-0001-6640-679X>),
+  Donovan Bangs [aut],
+  Marc Becker [aut]
+Maintainer: Alexander Brenning <alexander.brenning@uni-jena.de>
 Repository: CRAN
-Date/Publication: 2016-01-05 09:34:50
+Date/Publication: 2018-02-21 23:26:24 UTC
