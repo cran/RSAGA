@@ -1,8 +1,8 @@
 Package: RSAGA
 Type: Package
 Title: SAGA Geoprocessing and Terrain Analysis
-Version: 1.0.0
-Date: 2018-02-01
+Version: 1.1.0
+Date: 2018-05-15
 Authors@R: c(
     person("Alexander", "Brenning",
     email = "alexander.brenning@uni-jena.de", 
@@ -11,7 +11,14 @@ Authors@R: c(
     person("Donovan", "Bangs",
     role = "aut"),
     person("Marc", "Becker",
-    role = "aut")
+    role = "aut"),
+    person("Patrick", "Schratz",
+    email = "patrick.schratz@gmail.com", 
+    role = c("ctb"),
+    comment = c(ORCID = '0000-0003-0748-6624')),
+    person("Fabian", "Polakowski",
+    role = c("ctb"),
+    email = "fabian.polakowski@gmail.com")
     )
 Description: Provides access to geocomputing and terrain analysis functions
     of the geographical information system (GIS) 'SAGA' (System for Automated
@@ -19,24 +26,27 @@ Description: Provides access to geocomputing and terrain analysis functions
     SAGA. This package furthermore provides several R functions for handling ASCII
     grids, including a flexible framework for applying local functions (including
     predict methods of fitted models) and focal functions to multiple grids. SAGA
-    GIS is available under GPLv2 / LGPLv2 licence from <http://sourceforge.net/
-    projects/saga-gis/>.
+    GIS is available under GPLv2 / LGPLv2 licence from 
+    <http://sourceforge.net/projects/saga-gis/>.
+URL: https://github.com/r-spatial/RSAGA
 License: GPL-2 | file LICENSE
 Encoding: UTF-8
-SystemRequirements: SAGA GIS (2.3.1 LTS - 6.2.0)
+SystemRequirements: SAGA GIS (2.3 LTS - 6.3.0)
 Depends: R (>= 2.10), gstat, shapefiles, plyr
-Imports: stats, utils, rgdal, sf
-Suggests: knitr, rmarkdown
+Imports: stats, utils, rgdal
+Suggests: knitr, rmarkdown, testthat
 LazyLoad: yes
 Collate: 'gridtools.R' 'RSAGA-core.R' 'RSAGA-modules.R' 'RSAGA-utils.R'
         'RSAGA-package.R' 'landslides.R'
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2018-02-21 07:40:36 UTC; marc
+Packaged: 2018-05-16 16:07:46 UTC; marc
 Author: Alexander Brenning [aut, cre] (<https://orcid.org/0000-0001-6640-679X>),
   Donovan Bangs [aut],
-  Marc Becker [aut]
+  Marc Becker [aut],
+  Patrick Schratz [ctb] (<https://orcid.org/0000-0003-0748-6624>),
+  Fabian Polakowski [ctb]
 Maintainer: Alexander Brenning <alexander.brenning@uni-jena.de>
 Repository: CRAN
-Date/Publication: 2018-02-21 23:26:24 UTC
+Date/Publication: 2018-05-17 05:14:21 UTC
