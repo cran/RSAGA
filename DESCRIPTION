@@ -1,8 +1,8 @@
 Package: RSAGA
 Type: Package
 Title: SAGA Geoprocessing and Terrain Analysis
-Version: 1.1.0
-Date: 2018-05-15
+Version: 1.1.1
+Date: 2018-06-03
 Authors@R: c(
     person("Alexander", "Brenning",
     email = "alexander.brenning@uni-jena.de", 
@@ -34,14 +34,14 @@ Encoding: UTF-8
 SystemRequirements: SAGA GIS (2.3 LTS - 6.3.0)
 Depends: R (>= 2.10), gstat, shapefiles, plyr
 Imports: stats, utils, rgdal
-Suggests: knitr, rmarkdown, testthat
+Suggests: knitr, rmarkdown, testthat, digest, maptools, rgeos
 LazyLoad: yes
 Collate: 'gridtools.R' 'RSAGA-core.R' 'RSAGA-modules.R' 'RSAGA-utils.R'
         'RSAGA-package.R' 'landslides.R'
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2018-05-16 16:07:46 UTC; marc
+Packaged: 2018-06-03 11:47:48 UTC; marc
 Author: Alexander Brenning [aut, cre] (<https://orcid.org/0000-0001-6640-679X>),
   Donovan Bangs [aut],
   Marc Becker [aut],
@@ -49,4 +49,4 @@ Author: Alexander Brenning [aut, cre] (<https://orcid.org/0000-0001-6640-679X>),
   Fabian Polakowski [ctb]
 Maintainer: Alexander Brenning <alexander.brenning@uni-jena.de>
 Repository: CRAN
-Date/Publication: 2018-05-17 05:14:21 UTC
+Date/Publication: 2018-06-04 17:43:45 UTC
