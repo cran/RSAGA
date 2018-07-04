@@ -53,7 +53,7 @@ library("magrittr")
 # construct coordinates of two squares
 coords_1 <- matrix(data = c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0),
                  ncol = 2, byrow = TRUE)
-coords_2 <- matrix(data = c(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 
+coords_2 <- matrix(data = c(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5,
                             -0.5, -0.5),
                  ncol = 2, byrow = TRUE)
 # convert the coordinates into polygons

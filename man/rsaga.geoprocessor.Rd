@@ -72,7 +72,7 @@ rsaga.hillshade("dem","hillshade",exaggeration=2)
 # using the RSAGA geoprocessor:
 rsaga.geoprocessor("ta_lighting",0,list(ELEVATION="dem.sgrd",SHADE="hillshade",EXAGGERATION=2))
 # equivalent DOS command line call:
-# saga_cmd.exe ta_lighting 0 -ELEVATION dem.sgrd -SHADE hillshade -EXAGGERATION 2 
+# saga_cmd.exe ta_lighting 0 -ELEVATION dem.sgrd -SHADE hillshade -EXAGGERATION 2
 }
 }
 \references{

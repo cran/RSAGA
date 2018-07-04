@@ -53,13 +53,13 @@ library("sp")
 # construct coordinates of two squares
 coords_1 <- matrix(data = c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0),
                  ncol = 2, byrow = TRUE)
-coords_2 <- matrix(data = c(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 
+coords_2 <- matrix(data = c(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5,
                             -0.5, -0.5),
                  ncol = 2, byrow = TRUE)
 # convert the coordinates into polygons
 poly_1 <- SpatialPolygons(list(Polygons(list(Polygon(coords_1)), 1)))
 poly_1 <- SpatialPolygonsDataFrame(poly_1, data = data.frame(id = 1))
-poly_2 <- SpatialPolygons(list(Polygons(list(Polygon(coords_2)), 1))) 
+poly_2 <- SpatialPolygons(list(Polygons(list(Polygon(coords_2)), 1)))
 poly_2 <- SpatialPolygonsDataFrame(poly_2, data = data.frame(id_2 = 2))
 # union the two polygons using SAGA and load the output
 dir_tmp <- paste0(tempdir(), "/out.shp")
