@@ -343,7 +343,7 @@ rsaga.import.gdal = function( in.grid, out.grid, env = rsaga.env(), ... )
     }
 
     rsaga.geoprocessor("io_gdal", module = module,
-        param = param, env = env, ...)
+        param = param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -380,7 +380,7 @@ rsaga.esri.to.sgrd = function( in.grids,
     res = c()
     for (i in 1:length(in.grids))
         res = c(res, rsaga.geoprocessor("io_grid", "Import ESRI Arc/Info Grid",
-            list(FILE=in.grids[i],GRID=out.sgrds[i]),...) )
+            list(FILE=in.grids[i],GRID=out.sgrds[i]), check.parameters = FALSE, ...) )
     invisible(res)
 }
 
@@ -443,7 +443,7 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
     res = c()
     for (i in 1:length(in.sgrds))
         res = c(res, rsaga.geoprocessor("io_grid", "Export ESRI Arc/Info Grid",
-            list( GRID=in.sgrds[i], FILE=out.grids[i], FORMAT=format, GEOREF=georef, PREC=prec[i]),
+            list( GRID=in.sgrds[i], FILE=out.grids[i], FORMAT=format, GEOREF=georef, PREC=prec[i]), check.parameters = FALSE,
             ...))
     invisible(res)
 }
@@ -624,7 +624,7 @@ rsaga.slope.asp.curv = function(in.dem,
 
   module = "Slope, Aspect, Curvature"
 
-  rsaga.geoprocessor("ta_morphometry", module, param, env = env, ...)
+  rsaga.geoprocessor("ta_morphometry", module, param, env = env, check.parameters = FALSE, ...)
 
   if (!missing(out.cprof) | !missing(out.cplan))
     warning("Plan and profile curvature calculations have changed with SAGA 2.1.1+\n",
@@ -702,7 +702,7 @@ rsaga.local.morphometry = function( in.dem,
     module = "Slope, Aspect, Curvature"
     if (any(c("2.0.4","2.0.5","2.0.6") == env$version)) module = "Local Morphometry"
 
-    rsaga.geoprocessor("ta_morphometry", module, param, env = env, ...)
+    rsaga.geoprocessor("ta_morphometry", module, param, env = env, check.parameters = FALSE, ...)
   }
     if (!(env$version %in% c("2.0.4","2.0.5","2.0.6","2.0.7","2.0.8","2.0.9","2.1.0"))){
         if (!missing(out.hcurv) | !missing(out.vcurv))
@@ -856,7 +856,7 @@ rsaga.fill.sinks = function(in.dem,out.dem,
         method = "Fill Sinks XXL (Wang & Liu)"
     }
     if (!is.null(minslope)) param = c( param, MINSLOPE=minslope )
-    rsaga.geoprocessor("ta_preprocessor", method, param, ...)
+    rsaga.geoprocessor("ta_preprocessor", method, param, check.parameters = FALSE, ...)
 }
 
 
@@ -891,7 +891,7 @@ rsaga.sink.route = function(in.dem, out.sinkroute,
     }
     # I guess thrsheight is redundant if threshold is missing/false:
     param = c( param, THRSHEIGHT=as.numeric(thrsheight) )
-    rsaga.geoprocessor("ta_preprocessor", "Sink Drainage Route Detection", param, ...)
+    rsaga.geoprocessor("ta_preprocessor", "Sink Drainage Route Detection", param, check.parameters = FALSE, ...)
     # was: module = 0
 }
 
@@ -926,7 +926,7 @@ rsaga.sink.removal = function(in.dem,in.sinkroute,out.dem,method="fill",...)
         param = c(param, SINKROUTE=in.sinkroute)
     }
     param = c( param, DEM_PREPROC=out.dem, METHOD=method )
-    rsaga.geoprocessor("ta_preprocessor", "Sink Removal", param, ...)
+    rsaga.geoprocessor("ta_preprocessor", "Sink Removal", param, check.parameters = FALSE, ...)
 }
 
 
@@ -972,7 +972,7 @@ rsaga.close.gaps = function(in.dem,out.dem,threshold=0.1,...)
     in.dem = default.file.extension(in.dem,".sgrd")
     out.dem = default.file.extension(out.dem, ".sgrd")
     param = list( INPUT=in.dem, RESULT=out.dem, THRESHOLD=as.numeric(threshold) )
-    rsaga.geoprocessor("grid_tools", "Close Gaps", param, ...)
+    rsaga.geoprocessor("grid_tools", "Close Gaps", param, check.parameters = FALSE, ...)
 }
 
 
@@ -1023,7 +1023,7 @@ rsaga.hillshade = function(in.dem, out.grid,
         choices=c("standard","max90deg.standard","combined.shading","ray.tracing"))
     param = list(ELEVATION=in.dem, SHADE=out.grid, METHOD=method,
         AZIMUTH=azimuth, DECLINATION=declination, EXAGGERATION=exaggeration)
-    rsaga.geoprocessor("ta_lighting", "Analytical Hillshading", param, ...)
+    rsaga.geoprocessor("ta_lighting", "Analytical Hillshading", param, check.parameters = FALSE, ...)
     # was: module = 0
 }
 
@@ -1261,7 +1261,7 @@ rsaga.pisr = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
 
     rsaga.geoprocessor(lib = "ta_lighting",
         module = "Potential Incoming Solar Radiation",  # = 2
-        param = param, env = env, ...)
+        param = param, env = env, check.parameters = FALSE, ...)
 }
 
 #' Potential incoming solar radiation SAGA 2.2.2+
@@ -1513,7 +1513,7 @@ rsaga.pisr2 = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
 
     rsaga.geoprocessor(lib = "ta_lighting",
                        module = "Potential Incoming Solar Radiation",  # = 2
-                       param = param, env = env, ...)
+                       param = param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -1610,7 +1610,7 @@ rsaga.solar.radiation = function(in.dem, out.grid, out.duration, latitude,
     }
     rsaga.geoprocessor(lib = "ta_lighting",
         module = "Incoming Solar Radiation",  # = 2
-        param = param, env = env, ...)
+        param = param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -1717,7 +1717,7 @@ rsaga.insolation = function(in.dem, in.vapour, in.latitude, in.longitude,
     }
     rsaga.geoprocessor(lib = "ta_lighting",
         module = "Insolation", # = 3
-        param = param, ...)
+        param = param, check.parameters = FALSE, ...)
 }
 
 
@@ -1776,7 +1776,7 @@ rsaga.filter.simple = function(in.grid, out.grid, mode="circle",
 
     rsaga.geoprocessor(lib = "grid_filter",
         module = "Simple Filter",
-        param = param, env = env, ...)
+        param = param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -1818,7 +1818,7 @@ rsaga.filter.gauss = function(in.grid, out.grid, sigma,
 
     rsaga.geoprocessor(lib = "grid_filter",
         module = "Gaussian Filter", # = 1,
-        param, env = env, ...)
+        param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -1947,7 +1947,7 @@ rsaga.parallel.processing = function(in.dem, in.sinkroute, in.weight,
     if (env$version == "2.0.4" | env$version == "2.0.5" | env$version == "2.0.6")
         module = "Parallel Processing"
 
-    rsaga.geoprocessor(lib = "ta_hydrology", module = module, param, env = env, ...)
+    rsaga.geoprocessor(lib = "ta_hydrology", module = module, param, env = env, check.parameters = FALSE, ...)
 }
 
 #' Top-Down Processing
@@ -2130,7 +2130,7 @@ rsaga.topdown.processing = function(in.dem, in.sinkroute, in.weight, in.mean, in
       module = "Flow Accumulation (Top-Down)"
     }
 
-    rsaga.geoprocessor(lib = "ta_hydrology", module = module, param, env = env, ...)
+    rsaga.geoprocessor(lib = "ta_hydrology", module = module, param, env = env, check.parameters = FALSE, ...)
 }
 
 #' SAGA Modules SAGA Wetness Index
@@ -2177,7 +2177,12 @@ rsaga.wetness.index = function( in.dem,
     env = rsaga.env(), ...)
 {
     in.dem = default.file.extension(in.dem,".sgrd")
-    out.wetness.index = default.file.extension(out.wetness.index, ".sgrd")
+    if(missing(out.wetness.index)) {
+      out.wetness.index = tempfile()
+      on.exit(unlink(paste(out.wetness.index,".*",sep="")), add = TRUE)
+    } else {
+      out.wetness.index = default.file.extension(out.wetness.index, ".sgrd")
+    }
     if (missing(out.carea)) {
         out.carea = tempfile()
         on.exit(unlink(paste(out.carea,".*",sep="")), add = TRUE)
@@ -2240,7 +2245,7 @@ rsaga.wetness.index = function( in.dem,
     }
     rsaga.geoprocessor(lib = "ta_hydrology",
         module = "SAGA Wetness Index",
-        param, ..., env = env)
+        param, check.parameters = FALSE, env=env, ...)
 }
 
 
@@ -2326,7 +2331,7 @@ rsaga.grid.calculus = function(in.grids, out.grid, formula,
     }
     rsaga.geoprocessor(lib = "grid_calculus",
         module = "Grid Calculator", # was = 1
-        param = param, env = env, ...)
+        param = param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -2441,7 +2446,7 @@ rsaga.contour = function(in.grid,out.shapefile,zstep,zmin,zmax,vertex="xy",env=r
     }
     rsaga.geoprocessor(lib = "shapes_grid",
         module = "Contour Lines from Grid",
-        param, env = env,...)
+        param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -2476,7 +2481,7 @@ rsaga.add.grid.values.to.points = function(in.shapefile,
                 RESULT = out.shapefile, INTERPOL = method)
     rsaga.geoprocessor(lib = "shapes_grid",
         module = "Add Grid Values to Points", # was: = 0
-        param, ...)
+        param, check.parameters = FALSE, ...)
 }
 
 
@@ -2534,7 +2539,7 @@ rsaga.grid.to.points = function(in.grids, out.shapefile,
         module = "Grid Values to Points"
     rsaga.geoprocessor(lib = "shapes_grid",
         module = module, # was: = 3
-        param, env = env, ...)
+        param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -2550,7 +2555,7 @@ rsaga.grid.to.points.randomly = function(in.grid,
     param = list(GRID = in.grid, FREQ = freq, POINTS = out.shapefile)
     rsaga.geoprocessor(lib = "shapes_grid",
         module = "Grid Values to Points (randomly)", # was: = 4
-        param, ...)
+        param, check.parameters = FALSE, ...)
 }
 
 
@@ -2575,10 +2580,10 @@ rsaga.grid.to.points.randomly = function(in.grid,
 #' @author Alexander Brenning (R interface), Andre Ringeler and Olaf Conrad (SAGA modules)
 #' @note The 'Inverse Distance Weighted' module of SAGA GIS not only support inverse-distance weighted interpolation, but also exponential and other weighting schemes (command line argument WEIGHTING); these are however not accessible through this function, but only through the `rsaga.geoprocessor`, if needed. See `rsaga.get.usage("grid_gridding","Inverse Distance Weighted")` for details.
 #'
-#' See the example section in the help file for [shapefiles::write.shapefile()] in package `shapefiles` to learn how to apply these interpolation functions to a shapefile exported from a data.frame.
+#' See the example section in the help file for \link[shapefiles:shapefiles]{write.shapefile()} in package `shapefiles` to learn how to apply these interpolation functions to a shapefile exported from a data.frame.
 #'
 #' Modified Quadratic Shephard method: based on module 660 in TOMS (see references).
-#' @seealso [rsaga.target()]; [gstat::idw()] in package `gstat`.
+#' @seealso [rsaga.target()]; \link[gstat:krige]{idw()} in package `gstat`.
 #' @keywords spatial interface
 #' @export
 rsaga.inverse.distance = function(in.shapefile, out.grid, field,
@@ -2644,7 +2649,7 @@ rsaga.inverse.distance = function(in.shapefile, out.grid, field,
 
     rsaga.geoprocessor(lib = "grid_gridding",
         module = "Inverse Distance Weighted",
-        param = param, env = env, ...)
+        param = param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -2692,7 +2697,7 @@ rsaga.nearest.neighbour = function(in.shapefile, out.grid, field,
 
     rsaga.geoprocessor(lib = "grid_gridding",
         module = "Nearest Neighbour",
-        param, env = env, ...)
+        param, env = env, check.parameters = FALSE, ...)
 }
 
 #' @rdname rsaga.inverse.distance
@@ -2746,7 +2751,7 @@ rsaga.modified.quadratic.shephard = function(in.shapefile, out.grid, field,
 
     rsaga.geoprocessor(lib = "grid_gridding",
         module = "Modifed Quadratic Shepard",
-        param, env = env, ...)
+        param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -2793,7 +2798,7 @@ rsaga.triangulation = function(in.shapefile, out.grid, field,
 
     rsaga.geoprocessor(lib = "grid_gridding",
         module = "Triangulation",
-        param, env = env, ...)
+        param, env = env, check.parameters = FALSE, ...)
 }
 
 
@@ -2805,10 +2810,10 @@ rsaga.triangulation = function(in.shapefile, out.grid, field,
 #'   "`Intersect`".
 #' @param layer_a A `character`-string representing the path to a polygon
 #'   shapefile or a spatial object of class
-#'   [sp::SpatialPolygonsDataFrame()].
+#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame}.
 #' @param layer_b A `character`-string representing the path to a polygon
 #'   shapefile or a spatial object of class
-#'   [sp::SpatialPolygonsDataFrame()] with which to intersect layer_a.
+#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame} with which to intersect layer_a.
 #' @param result A `character`-string indicating where the resulting
 #'   shapefile should be stored.
 #' @param split If `TRUE`, multipart polygons become separated polygons
@@ -2821,7 +2826,7 @@ rsaga.triangulation = function(in.shapefile, out.grid, field,
 #' @return The function saves the output shapefile to the path indicated in
 #'   function argument `result` and loads the resulting shapefile into R
 #'   when function parameter `load` is set to TRUE.
-#' @details Function [rgeos::gIntersection()] can also be used to
+#' @details Function `gIntersection` in `rgeos` package can also be used to
 #'   define the intersection between two polygon layers. However,
 #'   [rsaga.intersect.polygons()] will be usually much faster,
 #'   especially when intersecting thousands of polygons.
@@ -2886,7 +2891,7 @@ rsaga.intersect.polygons <-
                             B = layer_b,
                             RESULT = result,
                             SPLIT = split),
-                       env = env)
+                       env = env, check.parameters = FALSE)
     # if requested, load the resulting shapefile
     if (load) {
       rgdal::readOGR(dsn = dirname(result),
@@ -2901,10 +2906,10 @@ rsaga.intersect.polygons <-
 #' layers.
 #' @param layer_a A `character`-string representing the path to a polygon
 #'   shapefile or a spatial object of class
-#'   [sp::SpatialPolygonsDataFrame()].
+#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame}.
 #' @param layer_b A `character`-string representing the path to a polygon
 #'   shapefile or a spatial object of class
-#'   [sp::SpatialPolygonsDataFrame()] with which to union layer_a.
+#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame} with which to union layer_a.
 #' @param result `character`, path indicating where to store the output
 #'   shapefile.
 #' @param split If `TRUE`, multipart polygons become separated polygons
@@ -2917,7 +2922,7 @@ rsaga.intersect.polygons <-
 #' @return The function saves the output shapefile to the path indicated in
 #'   function argument `result` and loads the resulting shapefile into R
 #'   when function parameter `load` is set to TRUE.
-#' @details Function [rgeos::gUnion()] can also be used for joining
+#' @details Function `gUnion()` in `rgeos` package can also be used for joining
 #'   intersecting polygon geometries. However,
 #'   [rsaga.union.polygons()] will be usually much faster,
 #'   especially when joining thousands of polygons.
@@ -2981,7 +2986,7 @@ rsaga.union.polygons <-
                           B = layer_b,
                           RESULT = result,
                           SPLIT = split),
-                     env = env)
+                     env = env, check.parameters = FALSE)
 
   # if requested, load the resulting output shapefile
   if (load) {

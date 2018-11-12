@@ -10,11 +10,11 @@ rsaga.union.polygons(layer_a = NULL, layer_b = NULL, result = NULL,
 \arguments{
 \item{layer_a}{A \code{character}-string representing the path to a polygon
 shapefile or a spatial object of class
-\code{\link[sp:SpatialPolygonsDataFrame]{sp::SpatialPolygonsDataFrame()}}.}
+\link[sp:SpatialPolygons]{SpatialPolygonsDataFrame}.}
 
 \item{layer_b}{A \code{character}-string representing the path to a polygon
 shapefile or a spatial object of class
-\code{\link[sp:SpatialPolygonsDataFrame]{sp::SpatialPolygonsDataFrame()}} with which to union layer_a.}
+\link[sp:SpatialPolygons]{SpatialPolygonsDataFrame} with which to union layer_a.}
 
 \item{result}{\code{character}, path indicating where to store the output
 shapefile.}
@@ -41,7 +41,7 @@ corresponds to the intersection and the symmetrical difference of the two
 layers.
 }
 \details{
-Function \code{\link[rgeos:gUnion]{rgeos::gUnion()}} can also be used for joining
+Function \code{gUnion()} in \code{rgeos} package can also be used for joining
 intersecting polygon geometries. However,
 \code{\link[=rsaga.union.polygons]{rsaga.union.polygons()}} will be usually much faster,
 especially when joining thousands of polygons.

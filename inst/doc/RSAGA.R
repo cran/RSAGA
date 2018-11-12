@@ -1,9 +1,3 @@
-## ----setup, include = FALSE----------------------------------------------
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-
 ## ---- echo = FALSE, results = "hide", message = F, warning = F-----------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
 library(knitr)
