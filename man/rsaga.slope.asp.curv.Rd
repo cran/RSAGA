@@ -4,11 +4,26 @@
 \alias{rsaga.slope.asp.curv}
 \title{Slope, Aspect, Curvature}
 \usage{
-rsaga.slope.asp.curv(in.dem, out.slope, out.aspect, out.cgene, out.cprof,
-  out.cplan, out.ctang, out.clong, out.ccros, out.cmini, out.cmaxi,
-  out.ctota, out.croto, method = "poly2zevenbergen",
-  unit.slope = "radians", unit.aspect = "radians", env = rsaga.env(),
-  ...)
+rsaga.slope.asp.curv(
+  in.dem,
+  out.slope,
+  out.aspect,
+  out.cgene,
+  out.cprof,
+  out.cplan,
+  out.ctang,
+  out.clong,
+  out.ccros,
+  out.cmini,
+  out.cmaxi,
+  out.ctota,
+  out.croto,
+  method = "poly2zevenbergen",
+  unit.slope = "radians",
+  unit.aspect = "radians",
+  env = rsaga.env(),
+  ...
+)
 }
 \arguments{
 \item{in.dem}{input: digital elevation model as SAGA grid file (\code{.sgrd})}
@@ -73,7 +88,7 @@ The type of object returned depends on the \code{intern} argument passed to the 
 Calculates local morphometric terrain attributes (i.e. slope, aspect, and curvatures). Intended for use with SAGA v 2.1.1+. For older versions use \code{\link[=rsaga.local.morphometry]{rsaga.local.morphometry()}}.
 }
 \details{
-Profile and plan curvature calculation (\code{out.cprof}, \code{out.cplan}) changed in SAGA GIS 2.1.1+ compared to earlier versions. See the following thread on sourceforge.net for an ongoing discussion: \url{http://sourceforge.net/p/saga-gis/discussion/354013/thread/e9d07075/#5727}
+Profile and plan curvature calculation (\code{out.cprof}, \code{out.cplan}) changed in SAGA GIS 2.1.1+ compared to earlier versions. See the following thread on sourceforge.net for an ongoing discussion: \url{https://sourceforge.net/p/saga-gis/discussion/354013/thread/e9d07075/#5727}
 }
 \examples{
 \dontrun{
@@ -124,9 +139,9 @@ Haralick, R.M. (1983): Ridge and valley detection on digital images. Computer Vi
 
 For a discussion on the calculation of slope by ArcGIS check these links:
 
-\url{http://forums.esri.com/Thread.asp?c=93&f=1734&t=239914}
+\url{https://community.esri.com/?c=93&f=1734&t=239914}
 
-\url{http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?topicname=how_slope_works}
+\url{https://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?topicname=how_slope_works}
 }
 \seealso{
 \code{\link[=rsaga.local.morphometry]{rsaga.local.morphometry()}}, \code{\link[=rsaga.parallel.processing]{rsaga.parallel.processing()}}, \code{\link[=rsaga.geoprocessor]{rsaga.geoprocessor()}},  \code{\link[=rsaga.env]{rsaga.env()}}

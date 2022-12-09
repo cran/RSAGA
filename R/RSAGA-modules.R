@@ -100,221 +100,20 @@ rsaga.target = function(
 #' @details The GDAL Raster Import module of SAGA imports grid data from various
 #'   file formats using the Geospatial Data Abstraction Library (GDAL) by Frank
 #'   Warmerdam. GDAL Versions are specific to SAGA versions:
-#' + SAGA 2.0.7 - 2.0.8: GDAL v.1.8.0
-#' + SAGA 2.1.0 - 2.1.1: GDAL v.1.10.0
 #' + SAGA 2.1.2 - 2.2.0: GDAL v.1.11.0
 #' + SAGA 2.2.1 - 2.2.3: GDAL v.2.1.0 dev
-#' More information is available at <http://www.gdal.org/>.
+#' + ...
+#' + SAGA 8.4.1: GDAL v3.3.0
+#' More information is available at <https://gdal.org/>.
 #'
 #' If `in.grid` has more than one band (e.g. RGB GEOTIFF), then output
 #' grids with file names of the form \eqn{in.grid{\_}01.sgrd}{in.grid_01.sgrd},
 #' \eqn{in.grid{\_}02.sgrd}{in.grid_02.sgrd} etc. are written, one for each
 #' band.
 #'
-#' The following raster formats are currently supported. Last updated for SAGA
-#' GIS 2.2.3; for a list for a specific SAGA GIS version call
-#' `rsaga.html.help("io_gdal","GDAL: Import Raster", env =
-#' rsaga.env(path="SAGA_Version_to_Test"))`
-#' + BAG - Bathymetry Attributed Grid
-#' + ECW - ERDAS Compressed Wavelets (SDK 3.x)
-#' + JP2ECW - ERDAS JPEG2000 (SDK 3.x)
-#' + FITS - Flexible Image Transport System
-#' + GMT - GMT NetCDF Grid Format
-#' + HDF4 - Hierarchical Data Format Release 4
-#' + HDF4Image - HDF4 Dataset
-#' + HDF5 - Hierarchical Data Format Release 5
-#' + HDF5Image - HDF5 Dataset
-#' + KEA - KEA Image Format (.kea)
-#' + MG4Lidar - MrSID Generation 4 / Lidar (.sid)
-#' + MrSID - Multi-resolution Seamless Image Database (MrSID)
-#' + netCDF - Network Common Data Format
-#' + PostgreSQL - PostgreSQL/PostGIS
-#' + VRT - Virtual Raster
-#' + GTiff - GeoTIFF
-#' + NITF - National Imagery Transmission Format
-#' + RPFTOC - Raster Product Format TOC format
-#' + ECRGTOC - ECRG TOC format
-#' + HFA - Erdas Imagine Images (.img)
-#' + SAR_CEOS - CEOS SAR Image
-#' + CEOS - CEOS Image
-#' + JAXAPALSAR - JAXA PALSAR Product Reader (Level 1.1/1.5)
-#' + GFF - Ground-based SAR Applications Testbed File Format (.gff)
-#' + ELAS - ELAS
-#' + AIG - Arc/Info Binary Grid
-#' + AAIGrid - Arc/Info ASCII Grid
-#' + GRASSASCIIGrid - GRASS ASCII Grid
-#' + SDTS - SDTS Raster
-#' + DTED - DTED Elevation Raster
-#' + PNG - Portable Network Graphics
-#' + JPEG - JPEG JFIF
-#' + MEM - In Memory Raster
-#' + JDEM - Japanese DEM (.mem)
-#' + GIF - Graphics Interchange Format (.gif)
-#' + BIGGIF - Graphics Interchange Format (.gif)
-#' + ESAT - Envisat Image Format
-#' + BSB - Maptech BSB Nautical Charts
-#' + XPM - X11 PixMap Format
-#' + BMP - MS Windows Device Independent Bitmap
-#' + DIMAP - SPOT DIMAP
-#' + AirSAR - AirSAR Polarimetric Image
-#' + RS2 - RadarSat 2 XML Product
-#' + SAFE - Sentinel SAFE Product
-#' + PCIDSK - PCIDSK Database File
-#' + PCRaster - PCRaster Raster File
-#' + ILWIS - ILWIS Raster Map
-#' + SGI - SGI Image File Format 1.0
-#' + SRTMHGT - SRTMHGT File Format
-#' + Leveller - Leveller heightfield
-#' + Terragen - Terragen heightfield
-#' + ISIS3 - USGS Astrogeology ISIS cube (Version 3)
-#' + ISIS2 - USGS Astrogeology ISIS cube (Version 2)
-#' + PDS - NASA Planetary Data System
-#' + VICAR - MIPL VICAR file
-#' + TIL - EarthWatch .TIL
-#' + ERS - ERMapper .ers Labelled
-#' + JP2OpenJPEG - JPEG-2000 driver based on OpenJPEG library
-#' + L1B - NOAA Polar Orbiter Level 1b Data Set
-#' + FIT - FIT Image
-#' + GRIB - GRIdded Binary (.grb)
-#' + RMF - Raster Matrix Format
-#' + WCS - OGC Web Coverage Service
-#' + WMS - OGC Web Map Service
-#' + MSGN - EUMETSAT Archive native (.nat)
-#' + RST - Idrisi Raster A.1
-#' + INGR - Intergraph Raster
-#' + GSAG - Golden Software ASCII Grid (.grd)
-#' + GSBG - Golden Software Binary Grid (.grd)
-#' + GS7BG - Golden Software 7 Binary Grid (.grd)
-#' + COSAR - COSAR Annotated Binary Matrix (TerraSAR-X)
-#' + TSX - TerraSAR-X Product
-#' + COASP - DRDC COASP SAR Processor Raster
-#' + R - R Object Data Store
-#' + MAP - OziExplorer .MAP
-#' + PNM - Portable Pixmap Format (netpbm)
-#' + DOQ1 - USGS DOQ (Old Style)
-#' + DOQ2 - USGS DOQ (New Style)
-#' + ENVI - ENVI .hdr Labelled
-#' + EHdr - ESRI .hdr Labelled
-#' + GenBin - Generic Binary (.hdr Labelled)
-#' + PAux - PCI .aux Labelled
-#' + MFF - Vexcel MFF Raster
-#' + MFF2 - Vexcel MFF2 (HKV) Raster
-#' + FujiBAS - Fuji BAS Scanner Image
-#' + GSC - GSC Geogrid
-#' + FAST - EOSAT FAST Format
-#' + BT - VTP .bt (Binary Terrain) 1.3 Format
-#' + LAN - Erdas .LAN/.GIS
-#' + CPG - Convair PolGASP
-#' + IDA - Image Data and Analysis
-#' + NDF - NLAPS Data Format
-#' + EIR - Erdas Imagine Raw
-#' + DIPEx - DIPEx
-#' + LCP - FARSITE v.4 Landscape File (.lcp)
-#' + GTX - NOAA Vertical Datum .GTX
-#' + LOSLAS - NADCON .los/.las Datum Grid Shift
-#' + NTv2 - NTv2 Datum Grid Shift
-#' + CTable2 - CTable2 Datum Grid Shift
-#' + ACE2 - ACE2
-#' + SNODAS - Snow Data Assimilation System
-#' + KRO - KOLOR Raw
-#' + ROI_PAC - ROI_PAC raster
-#' + ISCE - ISCE raster
-#' + ARG - Azavea Raster Grid format
-#' + RIK - Swedish Grid RIK (.rik)
-#' + USGSDEM - USGS Optional ASCII DEM (and CDED)
-#' + GXF - GeoSoft Grid Exchange Format
-#' + NWT_GRD - Northwood Numeric Grid Format .grd/.tab
-#' + NWT_GRC - Northwood Classified Grid Format .grc/.tab
-#' + ADRG - ARC Digitized Raster Graphics
-#' + SRP - Standard Raster Product (ASRP/USRP)
-#' + BLX - Magellan topo (.blx)
-#' + Rasterlite - Rasterlite
-#' + PostGISRaster - PostGIS Raster driver
-#' + SAGA - SAGA GIS Binary Grid (.sdat)
-#' + KMLSUPEROVERLAY - Kml Super Overlay
-#' + XYZ - ASCII Gridded XYZ
-#' + HF2 - HF2/HFZ heightfield raster
-#' + PDF - Geospatial PDF
-#' + OZI - OziExplorer Image File
-#' + CTG - USGS LULC Composite Theme Grid
-#' + E00GRID - Arc/Info Export E00 GRID
-#' + ZMap - ZMap Plus Grid
-#' + NGSGEOID - NOAA NGS Geoid Height Grids
-#' + MBTiles - MBTiles
-#' + IRIS - IRIS data (.PPI, .CAPPi etc)
-#' + PLMOSAIC - Planet Labs Mosaic
-#' + CALS - CALS (Type 1)
-#' + WMTS - OGC Web Map Tile Service
-#' + ESRI Shapefile - ESRI Shapefile
-#' + MapInfo File - MapInfo File
-#' + UK .NTF - UK .NTF
-#' + OGD_SDTS - SDTS
-#' + S57 - IHO S-57 (ENC)
-#' + DGN - Microstation DGN
-#' + OGR_VRT - VRT - Virtual Datasource
-#' + REC EPIInfo .REC
-#' + Memory - Memory
-#' + BNA - Atlas BNA
-#' + CSV - Comma Separated Value (.csv)
-#' + NAS - NAS - ALKIS
-#' + GML - Geography Markup Language
-#' + GPX - GPX
-#' + LIBKML - Keyhole Markup Language (LIBKML)
-#' + KML - Keyhole Markup Language (KML)
-#' + GeoJSON - GeoJSON
-#' + Interlis 1 - Interlis 1
-#' + Interlis 2 - Interlis 2
-#' + OGR_GMT - GMT ASCII Vectors (.gmt)
-#' + GPKG - GeoPackage
-#' + SQLite - SQLite / Spatialite
-#' + ODBC - ODBC
-#' + WAsP - WAsP .map format
-#' + PGeo - ESRI Personal GeoDatabase
-#' + MSSQLSpatial - Microsoft SQL Server Spatial Database
-#' + MySQL - MySQL
-#' + OpenFileGDB - ESRI FileGDB
-#' + XPlane - X-Plane/Flightgear aeronautical data
-#' + DXF - AutoCAD DXF
-#' + Geoconcept - Geoconcept
-#' + GeoRSS - GeoRSS
-#' + GPSTrackMaker - GPSTrackMaker
-#' + VFK - Czech Cadastral Exchange Data Format
-#' + PGDUMP - PostgreSQL SQL dump
-#' + OSM - OpenStreetMap XML and PDF
-#' + GPSBabel - GPSBabel
-#' + SUA - Tim Newport-Peace's Special Use Airspace Format
-#' + OpenAir - OpenAir
-#' + OGR_PDS - Planetary Data Systems TABLE
-#' + WFS - OGC WFS (Web Feature Service)
-#' + HTF - Hydrographic Transfer Vector
-#' + AeronavFAA - Aeronav FAA
-#' + Geomedia - Geomedia .mdb
-#' + EDIGEO - French EDIGEO exchange format
-#' + GFT - Google Fusion Tables
-#' + GME - Google Maps Engine
-#' + SVG - Scalable Vector Graphics
-#' + CouchDB - CouchDB / GeoCouch
-#' + Cloudant - Cloudant / CouchDB
-#' + Idrisi - Idrisi Vector (.vct)
-#' + ARCGEN - Arc/Info Generate
-#' + SEGUKOOA - SEG-P1 / UKOOA P1/90
-#' + SEG-Y - SEG-Y
-#' + ODS - Open Document/ LibreOffice / OpenOffice Spreadsheet
-#' + XLSX - MS Office Open XML spreadsheet
-#' + ElasticSearch - Elastic Search
-#' + Walk - Walk
-#' + CartoDB - CartoDB
-#' + SXF - Storage and eXchange Format
-#' + Selafin - Selafin
-#' + JML - OpenJUMP JML
-#' + PLSCENES - Planet Labs Scenes API
-#' + CSW - OGC CSW (Catalog Search for the Web)
-#' + IDF - INTREST Data Format
-#' + TIGER - U.S. Census TIGER/Line
-#' + AVCBin - Arc/Info Binary Coverage
-#' + AVCE00 - Arc/Info E00 (ASCII) Coverage
-#' + HTTP - HTTP Fetching Wrapper
-#' @references GDAL website: <http://www.gdal.org/>
+#' Numerous raster formats are currently supported. For SAGA 8.4.1 see e.g.
+#' <https://saga-gis.sourceforge.io/saga_tool_doc/8.4.1/io_gdal_0.html>
+#' @references GDAL website: <https://gdal.org/>
 #' @author Alexander Brenning (R interface), Olaf Conrad / Andre Ringeler (SAGA module), Frank Warmerdam (GDAL)
 #' @seealso `read.ascii.grid`, `rsaga.esri.to.sgrd`, `read.sgrd`, `read.Rd.grid`
 #' @keywords spatial interface file
@@ -378,9 +177,10 @@ rsaga.esri.to.sgrd = function( in.grids,
     if (length(in.grids) != length(out.sgrds))
         stop("must have the same number of input and outpute grids")
     res = c()
-    for (i in 1:length(in.grids))
+    for (i in seq_along(in.grids)) try({
         res = c(res, rsaga.geoprocessor("io_grid", "Import ESRI Arc/Info Grid",
             list(FILE=in.grids[i],GRID=out.sgrds[i]), check.parameters = FALSE, ...) )
+    })
     invisible(res)
 }
 
@@ -441,10 +241,11 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
     if (length(prec) != length(in.sgrds))
         stop("must have same number of in-/output grids and 'prec' parameters (or length(prec)==1)")
     res = c()
-    for (i in 1:length(in.sgrds))
+    for (i in seq_along(in.sgrds)) try({
         res = c(res, rsaga.geoprocessor("io_grid", "Export ESRI Arc/Info Grid",
             list( GRID=in.sgrds[i], FILE=out.grids[i], FORMAT=format, GEOREF=georef, PREC=prec[i]), check.parameters = FALSE,
             ...))
+    })
     invisible(res)
 }
 
@@ -487,7 +288,7 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
 #' - 1 `"degrees"`
 #' @param env list, setting up a SAGA geoprocessing environment as created by [rsaga.env()]
 #' @param ... further arguments to [rsaga.geoprocessor()]
-#' @details Profile and plan curvature calculation (`out.cprof`, `out.cplan`) changed in SAGA GIS 2.1.1+ compared to earlier versions. See the following thread on sourceforge.net for an ongoing discussion: <http://sourceforge.net/p/saga-gis/discussion/354013/thread/e9d07075/#5727>
+#' @details Profile and plan curvature calculation (`out.cprof`, `out.cplan`) changed in SAGA GIS 2.1.1+ compared to earlier versions. See the following thread on sourceforge.net for an ongoing discussion: <https://sourceforge.net/p/saga-gis/discussion/354013/thread/e9d07075/#5727>
 #' @return The type of object returned depends on the `intern` argument passed to the [rsaga.geoprocessor()]. For `intern=FALSE` it is a numerical error code (0: success), or otherwise (default) a character vector with the module's console output.
 #' @references General references:
 #'
@@ -525,9 +326,9 @@ rsaga.sgrd.to.esri = function( in.sgrds, out.grids, out.path,
 #'
 #' For a discussion on the calculation of slope by ArcGIS check these links:
 #'
-#' <http://forums.esri.com/Thread.asp?c=93&f=1734&t=239914>
+#' <https://community.esri.com/?c=93&f=1734&t=239914>
 #'
-#' <http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?topicname=how_slope_works>
+#' <https://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?topicname=how_slope_works>
 #' @author Alexander Brenning and Donovan Bangs (R interface), Olaf Conrad (SAGA module)
 #' @seealso [rsaga.local.morphometry()], [rsaga.parallel.processing()], [rsaga.geoprocessor()],  [rsaga.env()]
 #' @examples
@@ -1456,7 +1257,7 @@ rsaga.pisr2 = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
       if (nchar(start.date$month) == 1) {
         start.date$month <- paste0("0", start.date$month-1)
       }
-      param = c( param, DAY = paste0(start.date$day, "/", start.date$month, "/", start.date$year))
+      param = c( param, DAY = paste0(start.date$month, "/", start.date$day, "/", start.date$year))
     }
     if (is.null(end.date)) {
         # check if moment:
@@ -1498,7 +1299,7 @@ rsaga.pisr2 = function(in.dem, in.svf.grid = NULL, in.vapour.grid = NULL,
            if (nchar(end.date$month) == 1) {
               end.date$month <- paste0("0", end.date$month-1)
            }
-         param = c( param, DAY_STOP = paste0(end.date$day, "/", end.date$month, "/", end.date$year))
+         param = c( param, DAY_STOP = paste0(end.date$month, "/", end.date$day, "/", end.date$year))
         }
 
         if (is.null(time.range)) time.range = c(0,24)
@@ -1642,6 +1443,7 @@ rsaga.solar.radiation = function(in.dem, out.grid, out.duration, latitude,
 #' @param lat.ref.user if `in.latitude` is missing and `lat.offset="user"`, then this numeric value defines the latitudinal reference (details??)
 #' @param lon.offset local time refers to grid's `"left"` edge (code 0), `"center"` (1), `"right"` edge (2), or a  `"user"`-defined reference.
 #' @param lon.ref.user if `in.longitude` is missing and `lon.offset="user"`, then this numeric value defines the reference of the local time (details??)
+#' @param env RSAGA geoprocessing environment obtained with [rsaga.env()]; this argument is required for version control (see Note)
 #' @param ... optional arguments to be passed to [rsaga.geoprocessor()], including the `env` RSAGA geoprocessing environment
 #' @details Calculation of incoming solar radiation (insolation). Based on the SADO (System for the Analysis of Discrete Surfaces) routines developed  by Boehner & Trachinow.
 #' @return The type of object returned depends on the `intern` argument passed to the [rsaga.geoprocessor()]. For `intern=FALSE` it is a numerical error code (0: success), or otherwise (default) a character vector with the module's console output.
@@ -1658,8 +1460,14 @@ rsaga.insolation = function(in.dem, in.vapour, in.latitude, in.longitude,
     radius=6366737.96,
     lat.offset="user", lat.ref.user=0,
     lon.offset="center", lon.ref.user=0,
-     ...)
+    env = rsaga.env(),
+    ...)
 {
+    if (!rsaga.module.exists(libs = "ta_lighting", module = "Insolation", env = env)) {
+      stop("Module 'Insolation' in library 'ta_lighting' not available in this version of SAGA GIS (",
+           env$version, "). Consider using function rsaga.pisr2() instead.")
+    }
+
     in.dem = default.file.extension(in.dem,".sgrd")
     param = list( GRD_DEM=in.dem )
     type = match.arg.ext(type,numeric=TRUE,ignore.case=TRUE,base=0)
@@ -1717,7 +1525,7 @@ rsaga.insolation = function(in.dem, in.vapour, in.latitude, in.longitude,
     }
     rsaga.geoprocessor(lib = "ta_lighting",
         module = "Insolation", # = 3
-        param = param, check.parameters = FALSE, ...)
+        param = param, check.parameters = FALSE, env = env, ...)
 }
 
 
@@ -2143,7 +1951,7 @@ rsaga.topdown.processing = function(in.dem, in.sinkroute, in.weight, in.mean, in
 #' @param out.cslope output file (optional): catchment slope grid file name
 #' @param out.mod.carea output file (optional): file name of modified catchment area grid
 #' @param suction SAGA GIS 2.1.0+: positive numeric value (optional): the lower this value is the stronger is the suction effect; defaults to a value of 10 (more detailed information is currently not available  in the SAGA GIS documentation
-#' @param area.type character or numeric (optional): type of area: `"absolute"` (or numeric code 0): absolute catchment area; `"square root"` (code 1; the default): square root of catchment area; `"specific"` (code 2): specific catchment area
+#' @param area.type character or numeric (optional): type of area: `"absolute"` (or numeric code 0): absolute catchment area; `"square root"` (code 1; the default e.g. in SAGA 2.3.1): square root of catchment area; `"specific"` (code 2; the default e.g. in SAGA 8.4.1): specific catchment area
 #' @param slope.type character or numeric (optional): type of slope: `"local"` (or numeric code 0): local slope; `"catchment"` (or code 1; the default): catchment slope.
 #' @param slope.min numeric (optional): minimum slope; default: 0
 #' @param slope.offset numeric (optional): offset slope; default: 0.1
@@ -2319,7 +2127,7 @@ rsaga.grid.calculus = function(in.grids, out.grid, formula,
     out.grid = default.file.extension(out.grid, ".sgrd")
     in.grids = default.file.extension(in.grids, ".sgrd")
     in.grids = paste(in.grids, collapse = ";")
-    if (any(class(formula) == "formula"))
+    if (inherits(formula, "formula"))
         formula = rev( as.character(formula) )[1]
     formula = gsub(" ", "", formula)
     if (env$version == "2.0.4") {
@@ -2499,9 +2307,9 @@ rsaga.add.grid.values.to.points = function(in.shapefile,
 #' @param env RSAGA geoprocessing environment created by [rsaga.env()]; required by `rsaga.grid.to.points` to determine version-dependent SAGA module name and arguments
 #' @param ... Optional arguments to be passed to [rsaga.geoprocessor()]
 #' @author Alexander Brenning (R interface), Olaf Conrad (SAGA modules)
-#' @note These functions use modules `Grid Values to Shapes` (pre-2.0.6 name: `Grid Values to Points`) and `Grid Values to Points (randomly)` in SAGA library `shapes_grid`.
+#' @note These functions use modules `Grid Values to Points` (in some versions also called `Grid Values to Shapes`) and `Grid Values to Points (randomly)` in SAGA library `shapes_grid`.
 #'
-#' The SAGA 2.0.6+ module `Grid Values to Shapes` is more flexible than the earlier versions as it allows to create grid cell polygons instead of center points (see argument `type`).
+#' The SAGA 2.0.6+ version of this module is more flexible as it allows to create grid cell polygons instead of center points (see argument `type`).
 #' @seealso [rsaga.add.grid.values.to.points()]
 #' @examples
 #' \dontrun{
@@ -2533,10 +2341,9 @@ rsaga.grid.to.points = function(in.grids, out.shapefile,
         param = c(param, POLYGONS = in.clip.polygons)
     if (!(env$version == "2.0.4" | env$version == "2.0.5"))
         param = c(param, TYPE = type)
-    module = "Grid Values to Shapes"
+    module = "Grid Values to Points"
     if (!rsaga.module.exists("shapes_grid",module,env=env))
-    #if (env$version == "2.0.4" | env$version == "2.0.5")
-        module = "Grid Values to Points"
+        module = "Grid Values to Shapes"
     rsaga.geoprocessor(lib = "shapes_grid",
         module = module, # was: = 3
         param, env = env, check.parameters = FALSE, ...)
@@ -2580,10 +2387,10 @@ rsaga.grid.to.points.randomly = function(in.grid,
 #' @author Alexander Brenning (R interface), Andre Ringeler and Olaf Conrad (SAGA modules)
 #' @note The 'Inverse Distance Weighted' module of SAGA GIS not only support inverse-distance weighted interpolation, but also exponential and other weighting schemes (command line argument WEIGHTING); these are however not accessible through this function, but only through the `rsaga.geoprocessor`, if needed. See `rsaga.get.usage("grid_gridding","Inverse Distance Weighted")` for details.
 #'
-#' See the example section in the help file for \link[shapefiles:shapefiles]{write.shapefile()} in package `shapefiles` to learn how to apply these interpolation functions to a shapefile exported from a data.frame.
+#' See the example section in the help file for [shapefiles::write.shapefile()] in package `shapefiles` to learn how to apply these interpolation functions to a shapefile exported from a data.frame.
 #'
 #' Modified Quadratic Shephard method: based on module 660 in TOMS (see references).
-#' @seealso [rsaga.target()]; \link[gstat:krige]{idw()} in package `gstat`.
+#' @seealso [rsaga.target()]; [gstat::idw()] in package `gstat`.
 #' @keywords spatial interface
 #' @export
 rsaga.inverse.distance = function(in.shapefile, out.grid, field,
@@ -2808,81 +2615,51 @@ rsaga.triangulation = function(in.shapefile, out.grid, field,
 #' @description The function `rsaga.intersect.polygons` calculates the
 #'   geometric intersection of two overlayed polygon layers using SAGA module
 #'   "`Intersect`".
-#' @param layer_a A `character`-string representing the path to a polygon
-#'   shapefile or a spatial object of class
-#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame}.
-#' @param layer_b A `character`-string representing the path to a polygon
-#'   shapefile or a spatial object of class
-#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame} with which to intersect layer_a.
-#' @param result A `character`-string indicating where the resulting
+#' @param layer_a A `character` string representing the path to a polygon
+#'   shapefile.
+#' @param layer_b A `character` string representing the path to a polygon
+#'   shapefile with which to intersect layer_a.
+#' @param result A `character` string indicating where the resulting
 #'   shapefile should be stored.
 #' @param split If `TRUE`, multipart polygons become separated polygons
 #'   (default: FALSE).
-#' @param load If `TRUE`, the resulting output shapefile will be loaded
-#'   into R (default: FALSE).
+#' @param load Deprecated, will be removed in a future release. Ignored
+#'   if `FALSE`, and causes an error if `TRUE` (default: NULL).
 #' @param env RSAGA geoprocessing environment created by
-#'   [rsaga.env()], required because module(s) depend(s) on SAGA
-#'   version.
+#'   [rsaga.env()].
 #' @return The function saves the output shapefile to the path indicated in
-#'   function argument `result` and loads the resulting shapefile into R
-#'   when function parameter `load` is set to TRUE.
+#'   function argument `result`.
 #' @details Function `gIntersection` in `rgeos` package can also be used to
 #'   define the intersection between two polygon layers. However,
 #'   [rsaga.intersect.polygons()] will be usually much faster,
 #'   especially when intersecting thousands of polygons.
-#' @author Jannes Muenchow (R interface), Olaf Conrad and Angus Johnson (SAGA
+#' @author Jannes Muenchow and Alexander Brenning (R interface), Olaf Conrad and Angus Johnson (SAGA
 #'   modules)
-#' @keywords vector operations, polygons
-#' @examples
-#' \dontrun{
-#' library("RSAGA")
-#' library("sp")
-#' library("magrittr")
-#' # construct coordinates of two squares
-#' coords_1 <- matrix(data = c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0),
-#'                  ncol = 2, byrow = TRUE)
-#' coords_2 <- matrix(data = c(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5,
-#'                             -0.5, -0.5),
-#'                  ncol = 2, byrow = TRUE)
-#' # convert the coordinates into polygons
-#' poly_1 <- SpatialPolygons(list(Polygons(list(Polygon(coords_1)), 1))) %>%
-#'   as(., "SpatialPolygonsDataFrame")
-#' poly_2 <- SpatialPolygons(list(Polygons(list(Polygon(coords_2)), 1))) %>%
-#'   as(., "SpatialPolygonsDataFrame")
-#' # intersect the two polygons using SAGA and load the output
-#' dir_tmp <- paste0(tempdir(), "/out.shp")
-#' res <- rsaga.intersect.polygons(layer_a = poly_1,
-#'                                 layer_b = poly_2,
-#'                                 result = dir_tmp,
-#'                                 load = TRUE)
-#' # plot input polygons
-#' plot(poly_1, col = "red", axes = TRUE, xlim = c(-1, 1), ylim = c(-1, 1))
-#' plot(poly_2, col = "blue", add = TRUE)
-#' # plot the intersection
-#' plot(res, col = "yellow", add = TRUE)
-#' }
+#' @keywords vector operations polygons
 #' @export
 #'
 rsaga.intersect.polygons <-
   function(layer_a = NULL, layer_b = NULL, result = NULL,
-           split = FALSE, load = FALSE, env = rsaga.env()) {
+           split = FALSE, load = NULL, env = rsaga.env()) {
     # check if all necessary function arguments were supplied
     if (any(mapply(is.null, list(layer_a, layer_b, result)))) {
       stop("Please specify layer_a, layer_b and a result layer!")
     }
 
-    # define a temporary folder
-    dir_tmp <- tempdir()
-    if (class(layer_a) == "SpatialPolygonsDataFrame") {
-      rgdal::writeOGR(layer_a, dsn = dir_tmp, layer = "layer_a",
-                      driver = "ESRI Shapefile", overwrite_layer = TRUE)
-      layer_a <- paste(dir_tmp, "layer_a.shp", sep = "\\")
+    if (!is.character(layer_a)) {
+      stop("layer_a must be the name of a shapefile; SpatialPolygonsDataFrames are no longer supported")
     }
 
-    if (class(layer_b) == "SpatialPolygonsDataFrame") {
-      rgdal::writeOGR(layer_b, dsn = dir_tmp, layer = "layer_b",
-                      driver = "ESRI Shapefile", overwrite_layer = TRUE)
-      layer_b <- paste(dir_tmp, "layer_b.shp", sep = "\\")
+    if (!is.character(layer_b)) {
+      stop("layer_b must be the name of a shapefile; SpatialPolygonsDataFrames are no longer supported")
+    }
+
+    if (!is.null(load)) {
+      if (load) {
+        stop("argument 'load' is deprecated, and 'load = TRUE' is no longer supported")
+      } else {
+        warning("argument 'load' is deprecated and will cause an error in future versions")
+      }
     }
 
     # execute the 'Intersect'-function
@@ -2892,11 +2669,6 @@ rsaga.intersect.polygons <-
                             RESULT = result,
                             SPLIT = split),
                        env = env, check.parameters = FALSE)
-    # if requested, load the resulting shapefile
-    if (load) {
-      rgdal::readOGR(dsn = dirname(result),
-                     layer = gsub(".shp", "", basename(result)))
-    }
   }
 
 #' @title Spatial union of two polygon layers
@@ -2904,80 +2676,53 @@ rsaga.intersect.polygons <-
 #'   "`Union`" to calculate the geometric union of two polygon layers. This
 #' corresponds to the intersection and the symmetrical difference of the two
 #' layers.
-#' @param layer_a A `character`-string representing the path to a polygon
-#'   shapefile or a spatial object of class
-#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame}.
-#' @param layer_b A `character`-string representing the path to a polygon
-#'   shapefile or a spatial object of class
-#'   \link[sp:SpatialPolygons]{SpatialPolygonsDataFrame} with which to union layer_a.
+#' @param layer_a A `character` string representing the path to a polygon
+#'   shapefile.
+#' @param layer_b A `character` string representing the path to a polygon
+#'   shapefile with which to union layer_a.
 #' @param result `character`, path indicating where to store the output
 #'   shapefile.
 #' @param split If `TRUE`, multipart polygons become separated polygons
 #'   (default: FALSE).
-#' @param load If `TRUE`, the resulting output shapefile will be loaded
-#'   into R (default: FALSE).
+#' @param load Deprecated, will be removed in a future release. Ignored
+#'   if `FALSE`, and causes an error if `TRUE`  (default: NULL)
 #' @param env RSAGA geoprocessing environment created by
 #'   [rsaga.env()], required because module(s) depend(s) on SAGA
 #'   version.
 #' @return The function saves the output shapefile to the path indicated in
-#'   function argument `result` and loads the resulting shapefile into R
-#'   when function parameter `load` is set to TRUE.
+#'   function argument `result`.
 #' @details Function `gUnion()` in `rgeos` package can also be used for joining
 #'   intersecting polygon geometries. However,
 #'   [rsaga.union.polygons()] will be usually much faster,
 #'   especially when joining thousands of polygons.
-#' @author Jannes Muenchow (R interface), Olaf Conrad and Angus Johnson (SAGA
+#' @author Jannes Muenchow and Alexander Brenning (R interface), Olaf Conrad and Angus Johnson (SAGA
 #'   modules)
-#' @keywords vector operations, polygons
-#' @examples
-#' \dontrun{
-#' library("RSAGA")
-#' library("sp")
-#' # construct coordinates of two squares
-#' coords_1 <- matrix(data = c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0),
-#'                  ncol = 2, byrow = TRUE)
-#' coords_2 <- matrix(data = c(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5,
-#'                             -0.5, -0.5),
-#'                  ncol = 2, byrow = TRUE)
-#' # convert the coordinates into polygons
-#' poly_1 <- SpatialPolygons(list(Polygons(list(Polygon(coords_1)), 1)))
-#' poly_1 <- SpatialPolygonsDataFrame(poly_1, data = data.frame(id = 1))
-#' poly_2 <- SpatialPolygons(list(Polygons(list(Polygon(coords_2)), 1)))
-#' poly_2 <- SpatialPolygonsDataFrame(poly_2, data = data.frame(id_2 = 2))
-#' # union the two polygons using SAGA and load the output
-#' dir_tmp <- paste0(tempdir(), "/out.shp")
-#' res <- rsaga.union.polygons(layer_a = poly_1,
-#'                             layer_b = poly_2,
-#'                             result = dir_tmp,
-#'                             load = TRUE)
-#' # output attribute table consists of three elements, i.e. the union of poly_1
-#' # and poly_2
-#' dim(res)
-#' res@data
-#' }
+#' @keywords vector operations polygons
 #' @export
 
 rsaga.union.polygons <-
   function(layer_a = NULL, layer_b = NULL,
-           result = NULL, split = FALSE, load = FALSE,
+           result = NULL, split = FALSE, load = NULL,
            env = rsaga.env()) {
     # check if all necessary function arguments were provided
     if (any(mapply(is.null, list(layer_a, layer_b, result)))) {
       stop("Please specify layer_a, layer_b and a result layer!")
       }
 
-    # define a temporary folder
-    dir_tmp <- tempdir()
-    # if layer_a and layer_b are SpatialObjects, save them as shapefiles
-    if (class(layer_a) == "SpatialPolygonsDataFrame") {
-      rgdal::writeOGR(layer_a, dsn = dir_tmp, layer = "layer_a",
-                      driver = "ESRI Shapefile", overwrite_layer = TRUE)
-      layer_a <- paste(dir_tmp, "layer_a.shp", sep = "\\")
+    if (!is.character(layer_a)) {
+      stop("layer_a must be the name of a shapefile; SpatialPolygonsDataFrames are no longer supported")
     }
-    if (class(layer_b) == "SpatialPolygonsDataFrame") {
-      rgdal::writeOGR(layer_b, dsn = dir_tmp, layer = "layer_b",
-                      driver = "ESRI Shapefile", overwrite_layer = TRUE)
-      layer_b <- paste(dir_tmp, "layer_b.shp", sep = "\\")
+
+    if (!is.character(layer_b)) {
+      stop("layer_b must be the name of a shapefile; SpatialPolygonsDataFrames are no longer supported")
+    }
+
+    if (!is.null(load)) {
+      if (load) {
+        stop("argument 'load' is deprecated, and 'load = TRUE' is no longer supported")
+      } else {
+        warning("argument 'load' is deprecated and will cause an error in future versions")
+      }
     }
 
   # execute SAGA function "Union"
@@ -2987,11 +2732,5 @@ rsaga.union.polygons <-
                           RESULT = result,
                           SPLIT = split),
                      env = env, check.parameters = FALSE)
-
-  # if requested, load the resulting output shapefile
-  if (load) {
-    rgdal::readOGR(dsn = dirname(result),
-                   layer = gsub(".shp", "", basename(result)))
-    }
 }
 

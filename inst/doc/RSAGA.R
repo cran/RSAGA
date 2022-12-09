@@ -1,33 +1,33 @@
-## ---- echo = FALSE, results = "hide", message = F, warning = F-----------
+## ---- echo = FALSE, results = "hide", message = F, warning = F----------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
 library(knitr)
 
 ## ----out.width = "80%", echo=FALSE, fig.cap="Figure 1: Hillshade RBSF DEM"----
 include_graphics('dem.png') 
 
-## ---- collapse=TRUE, eval = FALSE----------------------------------------
+## ---- collapse=TRUE, eval = FALSE---------------------------------------------
 #  env <- rsaga.env()
 
-## ---- results = "hide", eval = FALSE-------------------------------------
+## ---- results = "hide", eval = FALSE------------------------------------------
 #  rsaga.geoprocessor(lib = "ta_morphometry", module = "Slope, Aspect, Curvature",
 #                     param = list(ELEVATION = paste(getwd(),"/dem.sgrd", sep = ""),
 #                                  SLOPE = paste(getwd(),"/slope.sgrd", sep = "")),
 #                     env = env)
 
-## ---- results = "hide", eval = FALSE-------------------------------------
+## ---- results = "hide", eval = FALSE------------------------------------------
 #  rsaga.slope(in.dem = "dem", out.slope = "slope", env = env)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  help(rsaga.slope)
 
-## ---- results = "hide", eval = FALSE-------------------------------------
+## ---- results = "hide", eval = FALSE------------------------------------------
 #  # A character string of available libraries:
 #  rsaga.get.libraries(path = env$modules)
 #  
 #  # A list of modules in a library:
 #  rsaga.get.modules(libs = "ta_morphometry", env = env)
 
-## ---- results = "hide", eval=FALSE---------------------------------------
+## ---- results = "hide", eval=FALSE--------------------------------------------
 #  rsaga.get.usage(lib = "ta_morphometry", module = "Slope, Aspect, Curvature", env = env)
 #  
 #  # Compare module parameters between versions:
@@ -37,20 +37,20 @@ include_graphics('dem.png')
 #  rsaga.get.usage(lib = "ta_morphometry", module = "Slope, Aspect, Curvature",
 #                  env = rsaga.env(path = "C:/SAGA-GIS/saga_2.2.0_x64"))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 data(landslides)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  write.sgrd(data = dem, file = "dem", header = dem$header,
 #             env = env)  # write.sgrd and read.sgrd use SAGA, and should specify 'env'
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  write.ascii.grid(data = dem, file = "dem", header = dem$header)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  rsaga.slope(in.dem = "C:/InData/dem", out.slope = "C:/OutData/slope", env = env)
 
-## ---- collapse = TRUE, results = "hide", warning = FALSE, eval = FALSE----
+## ---- collapse = TRUE, results = "hide", warning = FALSE, eval = FALSE--------
 #  # By individual function calls:
 #  rsaga.slope("dem", "slope", method = "poly2zevenbergen", env = env)
 #  rsaga.plan.curvature("dem", "cplan", method = "poly2zevenbergen", env = env)
@@ -62,14 +62,14 @@ data(landslides)
 #                       method = "poly2zevenbergen",
 #                       env = env)
 
-## ---- collapse = TRUE, results = "hide", eval = FALSE--------------------
+## ---- collapse = TRUE, results = "hide", eval = FALSE-------------------------
 #  rsaga.topdown.processing("dem", out.carea = "carea", method = "mfd", env = env)
 
-## ---- collapse = TRUE, results = "hide", eval = FALSE--------------------
+## ---- collapse = TRUE, results = "hide", eval = FALSE-------------------------
 #  rsaga.grid.calculus(in.grids = "carea", out.grid = "log10_carea",
 #                      formula = ~ log(a), env = env)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # Pick grid values; add to landslides data.frame:
 #  landslides <- pick.from.saga.grid(landslides, "slope", varname = "slope", env = env,
 #                                    X.name = "x", Y.name = "y")
@@ -83,12 +83,12 @@ data(landslides)
 ## ----out.width = "80%", echo=FALSE, fig.cap="Figure 2: Terrain variables a) slope; b) plan curvature; c) profile curvature; d) logarithm of contributing area"----
 include_graphics("terrain_variables.png") 
 
-## ---- results = "hide", eval = FALSE-------------------------------------
+## ---- results = "hide", eval = FALSE------------------------------------------
 #  rsaga.sgrd.to.esri(in.sgrds = c("slope", "cprof", "cplan", "carea"),
 #                     out.grids = c("slope", "cprof", "cplan", "carea"),
 #                     out.path = getwd(), format = "ascii", env = env)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  my.trafo <- function(x) {
 #     x$log.carea <- log10(x$carea)
 #     return(x)
@@ -96,7 +96,7 @@ include_graphics("terrain_variables.png")
 #  
 #  landslides <- my.trafo(landslides)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  library(gam)
 #  
 #  fit <- gam(lslpts ~ s(slope) + cprof + s(cplan) + s(log.carea),

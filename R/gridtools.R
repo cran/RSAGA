@@ -134,10 +134,10 @@ create.variable.name = function( filename, prefix = NULL, fsep = .Platform$file.
 #'  \item{yllcenter}{y coordinate of the center of the lower left grid cell}
 #' Note: The order of the components, especially of `?llcorner` and `?llcenter`, may change, depending on the order in which they appear in the grid header and on the georeferencing method (center or corner) used for the grid. The `?llcorner` and `?llcenter` attributes differ only by `cellsize/2`.
 #' @author Alexander Brenning
-#' @note `read.sgrd` and `write.sgrd` import/export grids indirectly by creating temporary ASCII grid files (this explains why `write.sgrd` has `prec` and `hdr.prec` arguments). Consider using `readGDAL` and \link[rgdal:readGDAL]{writeGDAL()} in package `rgdal` instead, which are likely more efficient but may require coercion of your gridded data to/from a `Spatial...DataFrame-class`.
+#' @note `read.sgrd` and `write.sgrd` import/export grids indirectly by creating temporary ASCII grid files (this explains why `write.sgrd` has `prec` and `hdr.prec` arguments). Consider using [sf::read_sf()] in package `sf` instead, which is likely more efficient but may require coercion of your gridded data to/from an object supported by `sf`.
 #'
 #' The `read.Rd.grid` and `write.Rd.grid` functions use the `load` and `save` commands to store a grid. The variable name used is `data`, which is either a numeric matrix or a list with components `data` (the grid data matrix) and `header` (the grid header information).
-#' @seealso `readGDAL` and \link[rgdal:readGDAL]{writeGDAL()} in package `rgdal`, and `readAsciiGrid` and `writeAsciiGrid` in package `maptools`
+#' @seealso [sf::read_sf()] and [sf::write_sf()] in package `sf`, and `readAsciiGrid` and `writeAsciiGrid` in package `maptools`
 #' @keywords file spatial interface
 #' @export
 read.ascii.grid = function( file, return.header = TRUE, print = 0,
@@ -518,7 +518,7 @@ pick.from.shapefile = function(data, shapefile, X.name="x", Y.name="y", ...)
 {
     shapefile = set.file.extension(shapefile,"")
     shapefile = substr(shapefile,1,nchar(shapefile)-1) # remove "." at the end
-    src = read.shapefile(shapefile)
+    src = shapefiles::read.shapefile(shapefile)
     src = add.xy(src)
     src = src$dbf[[1]]
     if (X.name != "XCOORD") {
@@ -1168,7 +1168,7 @@ focal.function = function( in.grid, in.factor.grid, out.grid.prefix,
         # check if the function will return a vector with variable names
         # when called without arguments:
         varnames = try(do.call(fun,list()),silent=TRUE)
-        if (missing(varnames) || class(varnames) == "try-error") {
+        if (missing(varnames) || inherits(varnames, "try-error")) {
             if (is.character(fun)) {
                 varnames = gsub(".","",fun,fixed=TRUE)
             } else if (is.function(fun)) {
@@ -1370,7 +1370,7 @@ gapply = function(in.grid,fun,varnames,mw.to.vector=TRUE,mw.na.rm=TRUE,...) {
         # check if the function will return a vector with variable names
         # when called without arguments:
         varnames = try(do.call(fun,list()),silent=TRUE)
-        if (class(varnames) == "try-error") {
+        if (inherits(varnames, "try-error")) {
             if (is.character(fun)) {
                 varnames = gsub(".","",fun,fixed=TRUE)
             } else if (is.function(fun)) {
@@ -1558,7 +1558,7 @@ multi.focal.function = function(
         # check if the function will return a vector with variable names
         # when called without arguments:
         out.varnames = try(do.call(fun,list()),silent=TRUE)
-        if (missing(out.varnames) || class(out.varnames) == "try-error") {
+        if (missing(out.varnames) || inherits(out.varnames, "try-error")) {
             if (is.character(fun)) {
                 out.varnames = gsub(".","",fun,fixed=TRUE)
             } else if (is.function(fun)) {
@@ -1988,7 +1988,7 @@ multi.local.function = function(
         # check if the function will return a vector with variable names
         # when called without arguments:
         out.varnames = try(do.call(fun,list()), silent = TRUE)
-        if (missing(out.varnames) || class(out.varnames) == "try-error") {
+        if (missing(out.varnames) || inherits(out.varnames, "try-error")) {
             if (is.character(fun)) {
                 out.varnames = gsub(".","",fun,fixed=TRUE)
             } else if (is.function(fun)) {
