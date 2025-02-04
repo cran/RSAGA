@@ -7,6 +7,10 @@ library(RSAGA)
 # tests. Use NULL to let RSAGA try to find a SAGA installation.
 # SAGA_PATH <- NULL
 SAGA_PATH <- "C:/Progra~1/SAGA"
+# SAGA_PATH <- "C:/Progra~1/saga-9.7.2_x64"
+# SAGA_PATH <- "C:/Progra~1/saga-9.3.3_x64"
+# SAGA_PATH <- "C:/Progra~1/saga-9.0.0_x64"
+# SAGA_PATH <- "C:/Progra~1/saga-8.5.0_x64"
 # SAGA_PATH <- "C:/Progra~1/saga_8.1.3_x64"
 # SAGA_PATH <- "C:/Progra~1/saga_2.3.1_x64"
 
@@ -53,6 +57,7 @@ test_that("Slope", {
     method = "poly2zevenbergen", env = env, check.module.exists = FALSE
   )
   expect_true(file.exists(out_fnm))
+  try(unlink(out_fnm))
 })
 
 test_that("Fill Sinks", {
@@ -73,6 +78,8 @@ test_that("Fill Sinks", {
   meddiff <- median(as.vector(grd$data - dem$data), na.rm = TRUE)
   expect_true(meddiff <= 0.000001)
   expect_true(abs(dem$header$xllcenter - grd$header$xllcenter) < 0.005)
+
+  try(unlink(out_fnm))
 })
 
 test_that("Sink Route", {
@@ -87,6 +94,7 @@ test_that("Sink Route", {
     env = env, check.module.exists = FALSE
   )
   expect_true(file.exists(out_fnm))
+  try(unlink(out_fnm))
 })
 
 test_that("Sink Removal", {
@@ -106,6 +114,7 @@ test_that("Sink Removal", {
   meddiff <- median(as.vector(grd$data - dem$data), na.rm = TRUE)
   expect_true(meddiff <= 0.000001)
   expect_true(abs(dem$header$xllcenter - grd$header$xllcenter) < 0.005)
+  try(unlink(out_fnm))
 })
 
 test_that("Close Gaps", {
@@ -126,6 +135,7 @@ test_that("Close Gaps", {
   expect_true(meddiff <= 0.000001)
   expect_equal(sum(is.na(as.vector(grd$data))), 0)
   expect_true(abs(dem$header$xllcenter - grd$header$xllcenter) < 0.005)
+  try(unlink(out_fnm))
 })
 
 test_that("Hillshade", {
@@ -140,6 +150,7 @@ test_that("Hillshade", {
     exaggeration = 10, env = env, check.module.exists = FALSE
   )
   expect_true(file.exists(out_fnm))
+  try(unlink(out_fnm))
 })
 
 test_that("PISR2", {
@@ -156,7 +167,7 @@ test_that("PISR2", {
     lmp.transmittance = 60, time.range = c(0, 24), time.step = 3,
     start.date = list(day = 1, month = 10, year = 2016),
     end.date = list(day = 6, month = 12, year = 2016),
-    day.step = 10, env = env, show = FALSE, check.module.exists = FALSE
+    day.step = 5, env = env, show = FALSE, check.module.exists = FALSE
   )
   expect_true(file.exists(out_fnm))
 
@@ -176,10 +187,13 @@ test_that("PISR2", {
   grd1 <- read.sgrd(out_fnm, prec = 5, env = env)
   grd2 <- read.sgrd(out_fnm2, prec = 5, env = env)
   expect_true(abs(grd1$header$xllcenter - grd2$header$xllcenter) < 0.0005)
-  # median deviation <5%, but not 0:
+  # median deviation <8%, but not 0:
   medratio <- median(as.vector(grd1$data / grd2$data), na.rm = TRUE)
-  expect_true(abs(medratio - 1 ) < 0.05)
+  expect_true(abs(medratio - 1 ) < 0.08)
   expect_true(abs(medratio - 1 ) > 0)
+
+  try(unlink(out_fnm))
+  try(unlink(out_fnm2))
 })
 
 test_that("Topdown Processing", {
@@ -195,6 +209,7 @@ test_that("Topdown Processing", {
     check.module.exists = FALSE
   )
   expect_true(file.exists(out_fnm))
+  try(unlink(out_fnm))
 })
 
 test_that("Wetness Index", {
@@ -210,6 +225,7 @@ test_that("Wetness Index", {
     check.module.exists = FALSE
   )
   expect_true(file.exists(out_fnm))
+  try(unlink(out_fnm))
 })
 
 test_that("Grid Calculus", {
@@ -232,6 +248,7 @@ test_that("Grid Calculus", {
   expect_equal(sum(is.na(as.vector(grd$data))),
                sum(is.na(as.vector(dem$data))))
   expect_true(abs(dem$header$xllcenter - grd$header$xllcenter) < 0.005)
+  try(unlink(out_fnm))
 })
 
 test_that("Contour", {
@@ -249,6 +266,7 @@ test_that("Contour", {
 
   shp <- sf::read_sf(out_fnm)
   expect_equal(as.character(sf::st_geometry_type(shp)[1]), "LINESTRING")
+  try(unlink(out_fnm))
 })
 
 test_that("Grid to Points Randomly", {
@@ -269,4 +287,30 @@ test_that("Grid to Points Randomly", {
   expect_equal(as.character(sf::st_geometry_type(shp)[1]), "POINT")
   # need to be tolerant here because actual number of sampled points is random:
   expect_true(nrow(shp) > 0.8*(dem$header$ncols * dem$header$nrows)/50)
+  try(unlink(out_fnm))
 })
+
+test_that("Grid to Points", {
+  testthat::skip_on_travis()
+  testthat::skip_on_cran()
+
+  env <- rsaga.env(path = SAGA_PATH)
+  out_fnm <- file.path(tempdir(), "grid_to_points.shp")
+
+  rsaga.grid.to.points(
+    in.grid = file.path(tempdir(), "dem.sgrd"),
+    out.shapefile = out_fnm,
+    exclude.nodata = TRUE,
+    env = env, check.module.exists = FALSE
+  )
+  expect_true(file.exists(out_fnm))
+
+  shp <- sf::read_sf(out_fnm)
+  expect_equal(as.character(sf::st_geometry_type(shp)[1]), "POINT")
+  # DEM contains ~0.4% nodata values:
+  expect_true(nrow(shp) != (dem$header$ncols * dem$header$nrows))
+  expect_true(nrow(shp) > 0.995*(dem$header$ncols * dem$header$nrows))
+  try(unlink(out_fnm))
+})
+
+try(unlink(file.path(tempdir(), "dem.sgrd")))

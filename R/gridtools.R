@@ -68,9 +68,11 @@ default.file.extension = function(filename, extension, force=FALSE) {
 #' @param filename character string
 #' @param prefix character string: optional prefix to be added
 #' @param fsep character used to separate path components
+#' @return character string: a variable name, see example below
 #' @examples
 #' \dontrun{
 #' create.variable.name("C:/my-path/my-file-name.Rd",prefix="res")
+#' # Result: "res.my.file.name"
 #' }
 #' @keywords utilities
 #' @export
@@ -121,7 +123,7 @@ create.variable.name = function( filename, prefix = NULL, fsep = .Platform$file.
 #'
 #' @return The `read.*` functions return either a list with components `data` (the grid data matrix) and `header` (the grid header  information, see below), if `return.header=TRUE`, or otherwise  just the grid data matrix `return.header=FALSE`.
 #'
-#' The grid data matrix is a numeric matrix whose first column corrensponds to the first (i.e. northernmost) row of the grid. Columns run from left = West to right = East.
+#' The grid data matrix is a numeric matrix whose first column corresponds to the first (i.e. northernmost) row of the grid. Columns run from left = West to right = East.
 #'
 #' The header information returned by the `read.ascii.grid[.header]` functions (if `return.header=TRUE`) is a list with the following components:
 #'  \item{ncols}{Number of grid columns.}
@@ -367,7 +369,7 @@ write.Rd.grid = function(data, file, header=NULL, write.header=TRUE,
 #' @param log logical vector, specifying for each variable in `pick` if interpolation should take place on the logarithmic scale (default: `FALSE`)
 #' @param X.name name of the variable containing the x coordinates
 #' @param Y.name name of the variable containing the y coordinates
-#' @param cbind logical: shoud the new variables be added to the input data.frame (`cbind=TRUE`, the default), or should they be returned as a separate vector or data.frame? `cbind=FALSE`
+#' @param cbind logical: should the new variables be added to the input data.frame (`cbind=TRUE`, the default), or should they be returned as a separate vector or data.frame? `cbind=FALSE`
 #' @param file file name (relative to `path`, default file extension `.asc`) of an ASCII grid from which to pick a variable, or an open connection to such a file
 #' @param path optional path to `file`
 #' @param varname character string: a variable name for the variable interpolated from grid file `file` in `pick.from.*.grid`; if missing, variable name will be determined from `file`name by a call to [create.variable.name()]
@@ -382,7 +384,7 @@ write.Rd.grid = function(data, file, header=NULL, write.header=TRUE,
 #' @param env list: RSAGA geoprocessing environment created by [rsaga.env()]
 #' @param show.output.on.console a logical (default: `FALSE`), indicates whether to capture the output of the command and show it on the R console (see [system()], [rsaga.geoprocessor()]).
 #' @param nsplit split the data.frame `data` in `nsplit` disjoint subsets in order to increase efficiency by using [plyr::ddply()] in package \pkg{plyr}. The default seems to perform well in many situations.
-#' @param parallel logical (default: `FALSE`): enable parallel processing; requires additional packages such as \pkg{doSNOW} or \pkg{doMC}. See example below and [plyr::ddply()]
+#' @param parallel logical (default: `FALSE`): enable parallel processing; requires additional packages such as (formerly) `doSNOW` or \pkg{doMC}. See example below and [plyr::ddply()]
 #' @param ... arguments to be passed to `pick.from.points`, and to `internal.pick.from.ascii.grid` in the case of `pick.from.ascii.grid`
 #' @details `pick.from.points` interpolates the variables defined by `pick` in the `src` data.frame to the locations provided by the `data` data.frame. Only nearest neighbour and ordinary kriging interpolation are currently available. This function is intended for 'data-rich' situations in which not much thought needs to be put into a geostatistical analysis of the spatial structure of a variable. In particular, this function is supposed to provide a simple, 'quick-and-dirty' interface for situations where the `src` data points are very densely distributed compared to the `data` locations.
 #'
@@ -390,7 +392,7 @@ write.Rd.grid = function(data, file, header=NULL, write.header=TRUE,
 #'
 #' `pick.from.ascii.grid` retrieves data values from an ASCII raster file using either nearest neighbour or ordinary kriging interpolation. The latter may not be possible for large raster data sets because the entire grid needs to be read into an R matrix. Split-apply-combine strategies are used to improve efficiency and allow for parallelization.
 #'
-#' The optional parallelization of `pick.from.ascii.grid` computation requires the use of a *parallel backend* package such as \pkg{doSNOW} or \pkg{doMC}, and the parallel backend needs to be registered before calling this function with `parallel=TRUE`. The example section provides an example using \pkg{doSNOW} on Windows. I have seen 25-40% reduction in processing time by parallelization in some examples that I ran on a dual core Windows computer.
+#' The optional parallelization of `pick.from.ascii.grid` computation requires the use of a *parallel backend* package such as (formerly) `doSNOW` or \pkg{doMC}, and the parallel backend needs to be registered before calling this function with `parallel=TRUE`. The example section provides an example using \pkg{doSNOW} on Windows. I have seen 25-40% reduction in processing time by parallelization in some examples that I ran on a dual core Windows computer.
 #'
 #' `pick.from.ascii.grids` performs multiple `pick.from.ascii.grid` calls. File `path` and `prefix` arguments may be specific to each `file` (i.e. each may be a character vector), but all interpolation settings will be the same for each `file`, limiting the flexibility a bit compared to individual `pick.from.ascii.grid` calls by the user. `pick.from.ascii.grids` currently processes the files sequentially (i.e. parallelization is limited to the `pick.from.ascii.grid` calls within this function).
 #'
@@ -411,18 +413,19 @@ write.Rd.grid = function(data, file, header=NULL, write.header=TRUE,
 #'
 #' The nearest neighbour interpolation currently randomly breaks ties if `pick.from.points` is used, and in a deterministic fashion (rounding towards greater grid indices, i.e. toward south and east) in the grid functions.
 #'
-#' @seealso  [grid.to.xyz()], %[vgm()], [krige()], [read.ascii.grid()], [write.ascii.grid()]
+#' @seealso  [grid.to.xyz()], [gstat::vgm()], [gstat::krige()], [read.ascii.grid()], [write.ascii.grid()]
 #' @examples
 #' \dontrun{
 #' # assume that 'dem' is an ASCII grid and d a data.frame with variables x and y
 #' pick.from.ascii.grid(d, "dem")
 #' # parallel processing on Windows using the doSNOW package:
-#' require(doSNOW)
-#' registerDoSNOW(cl <- makeCluster(2, type = "SOCK")) # DualCore processor
-#' pick.from.ascii.grid(d, "dem", parallel = TRUE)
+#' # ---outdated - doSNOW has been superseded---
+#' ## require(doSNOW)
+#' ## registerDoSNOW(cl <- makeCluster(2, type = "SOCK")) # DualCore processor
+#' ## pick.from.ascii.grid(d, "dem", parallel = TRUE)
 #' # produces two (ignorable) warning messages when using doSNOW
 #' # typically 25-40% faster than the above on my DualCore notebook
-#' stopCluster(cl)
+#' ## stopCluster(cl)
 #' }
 #'
 #' \dontrun{
@@ -854,7 +857,8 @@ grid.to.xyz = function(data,header,varname="z",colnames=c("x","y",varname)) {
 #' Pick the value in the center of a square matrix. Auxiliary function to be used by functions called by [focal.function()].
 #' @name centervalue
 #' @param x a square matrix
-#' @details See for example the code of [resid.median()].
+#' @details See for example the code of [resid.median()]. Intended for use with square moving window matrices with an odd number of columns and rows.
+#' @return value of the matrix entry in the middle of the matrix
 #' @seealso [focal.function()], [resid.median()]
 #' @examples
 #' ( m <- matrix( round(runif(9,1,10)), ncol=3 ) )
